@@ -1,0 +1,23 @@
+{
+  "name": "leaderboardv3",
+  "version": "1.0.0",
+  "description": "\"The leaderboard system for BVGS Dota 2\"",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/omorgan7/leaderboardv3.git"
+  },
+  "author": "Owen Morgan",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/omorgan7/leaderboardv3/issues"
+  },
+  "homepage": "https://github.com/omorgan7/leaderboardv3#readme",
+  "dependencies": {
+    "sqlite3": "^4.0.9"
+  }
+}
