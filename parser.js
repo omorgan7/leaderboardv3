@@ -18,7 +18,7 @@ function fileFromStdOut(stdout) {
 }
 
 exports.parseReplay = function(fileName, callback) {
-const javaParser = spawn.exec("java -jar /Users/Owen/Documents/Code/Java/clarity-examples/target/mjollnir.one-jar.jar " + fileName, (err, stdout, stderr) => {
+    const javaParser = spawn.exec("java -jar /Users/Owen/Documents/Code/Java/clarity-examples/target/mjollnir.one-jar.jar " + fileName, (err, stdout, stderr) => {
         if (err && err.code != 0) {
             callback(err)
             return

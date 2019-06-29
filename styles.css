@@ -1,0 +1,100 @@
+* {
+    color: white;
+}
+h1, th {
+    font-family: 'Cinzel', serif;
+}
+label {
+    font-family: 'Open Sans', sans-serif;
+}
+h2 {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 0.2em;
+    text-align: right;
+}
+button {
+    color: black;
+}
+table {
+    text-align: left;
+    margin-left: 18vw;
+    width: 64vw;
+    border-spacing: 0 10;
+}
+body {
+    background-image: url("background.jpg");
+    background-color: rgb(35, 35, 35);
+    background-repeat: repeat;
+    text-align: center;
+}
+form {
+    display: inline-block;
+    text-align: left;
+}
+input {
+    color: black;
+}
+input[type='password'] {
+    width: 70%;
+}
+input[type='submit'] {
+    width: 25%;
+}
+h1 {
+    padding-top: 85px;
+    margin-bottom: 0px;
+    font-size: 8.8vw;
+    font-weight: normal;
+    text-align: center;
+}
+div {
+    padding-top: 0px;
+    /* padding-left: 18vw; */
+}
+img {
+    vertical-align: center;
+    height: 90%;
+}
+tr {
+    height: 60px;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+td {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 1em;
+    height: 50px;
+}
+#cell-rank {
+    padding-left: 16px;
+    width: 15%;
+}
+#Player-Cell-Header {
+    width: 55px;
+}
+#cell-img {
+    margin-left: 0px;
+    padding-left: 0px;
+    align-content: right;
+}
+#cell-wins {
+    width: 11%;
+}
+#cell-losses {
+    width: 11%;
+}
+#cell-games {
+    width: 11%;
+}
+#login-fail {
+    color: red;
+    text-align: center;
+    font-size: 1em;
+}
+#table-header {
+    background-color: rgba(0,0,0,0);
+}
+#submit-score {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 1em;
+    height: 50px;
+}
