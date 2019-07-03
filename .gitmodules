@@ -1,0 +1,3 @@
+[submodule "mjollnir"]
+	path = mjollnir
+	url = https://github.com/omorgan7/mjollnir

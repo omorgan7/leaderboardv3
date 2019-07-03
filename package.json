@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "clear-replays": "rm replays/*",
+    "java-build": "mvn package",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
