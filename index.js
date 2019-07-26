@@ -2,12 +2,15 @@
 
 const database = require('./database')
 const parser = require('./parser')
-const express = require('express')
-const cookieParser = require('cookie-parser');
-const crypto = require('bcryptjs');
-const formidable = require('formidable');
+const render = require('./render')
 
-const app = express();
+const express = require('express')
+const cookieParser = require('cookie-parser')
+const crypto = require('bcryptjs')
+const formidable = require('formidable')
+const fs = require('fs')
+
+const app = express()
 
 const loginCookieOptions = {
     maxAge : 1000 * 60 * 10, // expires after 10 minutes
@@ -16,14 +19,15 @@ const loginCookieOptions = {
 }
 
 // todo: wire up a proper secret.
-app.use(cookieParser("a"));
-app.use(express.json());
+app.use(cookieParser("a"))
+app.use(express.json())
 
 function sendHomePage(req, res) {
-    res.sendFile('index.html', {root: './'});
+    res.sendFile('index.html', {root: './'})
 }
 
-const db = database.createDatabase()
+const db = database.startDatabase()
+const renderer = new render(db)
 
 app.get('/styles.css', (req, res, next) => {
     res.sendFile('styles.css', {root: './'})
@@ -35,6 +39,31 @@ app.get('/', (req, res, next) => {
     }
 
     sendHomePage(req, res);
+})
+
+app.get(/\/matches\/(\d+)/, (req, res, next) => {
+    const matchID = parseInt(req.params[0])
+    if (matchID == NaN) {
+        res.sendStatus(404)
+        return
+    }
+
+    renderer.page(matchID, (err, page) => {
+        if (err) {
+            console.log(err)
+            res.sendStatus(404)
+            return 
+        }
+
+        res.send(page)
+    })
+})
+
+app.get(/\/dota_assets\/(\w+\.(png|jpg))/, (req, res, next) => {
+    fs.stat("./dota_assets/" + req.params[0], (err, stats) => {
+        if (err) return;
+        res.sendFile("./dota_assets/" + req.params[0], {root: './dota_assets/'})
+    })
 })
 
 app.get('/index.html', (req, res, next) => {
@@ -58,14 +87,13 @@ app.post('/create', (req, res, next) => {
                 return
             }
             database.addMatch(db, matchData)
-            console.log("Added match to DB")
         })
         res.redirect("/")
     })
 })
 
 app.get('*', (req, res, next) => { 
-    res.status(404).send("404")
+    res.sendStatus(404)
 })
 
 app.listen(8080)

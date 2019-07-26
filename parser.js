@@ -18,7 +18,10 @@ function fileFromStdOut(stdout) {
 }
 
 exports.parseReplay = function(fileName, callback) {
-    const javaParser = spawn.exec("java -jar mollnir/target/mjollnir.one-jar.jar " + fileName, (err, stdout, stderr) => {
+    var file = fileName
+    const javaParser = spawn.exec("java -jar mjollnir/target/mjollnir.one-jar.jar " + fileName, (err, stdout, stderr) => {
+
+        fs.unlink(file, (_) => {})
         if (err && err.code != 0) {
             callback(err)
             return

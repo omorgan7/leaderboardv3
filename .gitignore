@@ -1,3 +1,6 @@
 replays/*
+dota_assets/*
 node_modules
 .vscode
+cached/*
+match_database.sqllite3

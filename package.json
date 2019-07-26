@@ -5,9 +5,12 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "clear-replays": "rm replays/*",
-    "java-build": "mvn package",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "clear-caches": "pushd cached; rm -- *.html; popd",
+    "clear-replays": "pushd replays; rm -- *; popd",
+    "scrape-server": "node scrape_dota_api.js",
+    "java-build": "pushd mjollnir; mvn package; popd",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "npx supervisor index.js"
   },
   "repository": {
     "type": "git",

@@ -1,7 +1,7 @@
 * {
     color: white;
 }
-h1, th {
+h1 {
     font-family: 'Cinzel', serif;
 }
 label {
@@ -15,12 +15,7 @@ h2 {
 button {
     color: black;
 }
-table {
-    text-align: left;
-    margin-left: 18vw;
-    width: 64vw;
-    border-spacing: 0 10;
-}
+
 body {
     background-image: url("background.jpg");
     background-color: rgb(35, 35, 35);
@@ -47,44 +42,89 @@ h1 {
     font-weight: normal;
     text-align: center;
 }
-div {
-    padding-top: 0px;
-    /* padding-left: 18vw; */
-}
-img {
-    vertical-align: center;
-    height: 90%;
-}
+/*  */
 tr {
     height: 60px;
     background-color: rgba(0, 0, 0, 0.4);
 }
-td {
+td, .cell {
     font-family: 'Open Sans', sans-serif;
-    font-size: 1em;
-    height: 50px;
+    font-size: 0.5vmax;
+    font-size: 10pt;
 }
-#cell-rank {
-    padding-left: 16px;
-    width: 15%;
+
+.match-hero-img {
+    max-height: 100%;
+    position: relative;
+    width: auto;
 }
-#Player-Cell-Header {
-    width: 55px;
+.cell.cell-hero-img {
+    position: relative;
+    top: 0%;
 }
-#cell-img {
-    margin-left: 0px;
-    padding-left: 0px;
-    align-content: right;
+
+@media screen and (max-width: 600px) {
+    .cell.cell-player {
+        max-width: 20%;
+    }
 }
-#cell-wins {
-    width: 11%;
+.cell.cell-player {
+    width: 20%;
 }
-#cell-losses {
-    width: 11%;
+
+.cell-item-img {
+    max-height: 50%;
 }
-#cell-games {
-    width: 11%;
+
+.cell-bp-img {
+    max-height: 50%;
+    filter: brightness(0.4)
 }
+
+.table {
+    display: table;
+    text-align: left;
+    margin-left: 12vw;
+    width: 74vw;
+    border-spacing: 10 5;    
+}
+
+
+@media screen and (max-width: 800px) {
+    .table {
+        width: 100%;
+        margin-left: 0;
+    }
+    .cell.cell-item {
+        display: none;
+    }
+}
+
+.table-row {
+    /* display: table-row; */
+    margin: 5px;
+    height: 40px;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.cell {
+    display: table-cell;
+    float: left;
+    overflow: auto;
+    position: relative;
+    top: 25%;
+    width: 5%;
+    height: 100%;
+    margin-right: 1px;
+}
+
+.cell-item {
+    min-width: 10%;
+    max-width: 30%;
+    height: 100%;
+    clear: right;
+}
+
 #login-fail {
     color: red;
     text-align: center;
