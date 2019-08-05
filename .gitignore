@@ -4,3 +4,4 @@ node_modules
 .vscode
 cached/*
 match_database.sqllite3
+.DS_Store
