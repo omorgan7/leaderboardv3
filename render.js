@@ -39,7 +39,7 @@ class Formatter {
 
     winner() {
         const winner = this.match.winner + " Victory"
-        return this.div("winner", winner)
+        return this.div("winner " + winner, winner)
     }
 
     matchHeader() {
@@ -47,11 +47,11 @@ class Formatter {
     }
 
     radiantHeader() {
-        return this.div("radiant-header", "Radiant team")
+        return this.div("radiant header", "Radiant team")
     }
 
     direHeader() {
-        return this.div("dire-header", "Dire team")
+        return this.div("dire header", "Dire team")
     }
 
     hero(hero) {
@@ -61,9 +61,10 @@ class Formatter {
     }
 
     items(itemsStr) {
-        const items = itemsStr.split(",").map((item) => "/dota_assets/" + item + ".png")
+        const items = itemsStr.split(",").map((item) => "/dota_assets/" + item + "_lg.png")
 
-        return this.tableCell(items.slice(0, 6).reduce((prev, next) => prev + "<img class='cell-item-img' src='" + next + "'>", "")+ items.slice(6).reduce((prev, next) => prev + "<img class='cell-bp-img' src='" + next + "'>", ""), "cell cell-item")
+        let extraClass = items.length > 6 ? "cell cell-item cell-item-adjust" : "cell cell-item"
+        return this.tableCell(items.slice(0, 6).reduce((prev, next) => prev + "<img class='cell-item-img' src='" + next + "'>", "")+ items.slice(6).reduce((prev, next) => prev + "<img class='cell-bp-img' src='" + next + "'>", ""), extraClass)
     }
 
     team(players) {
@@ -74,7 +75,7 @@ class Formatter {
             if (name.length > 20) {
                 name = name.slice(0, 15) + "..."
             }
-            this.tableCell(name, "cell cell-player")
+            this.tableCell(`<a href=/player/${player.steam_id}> ${name}</a>`, "cell cell-player")
             this.tableCell(`${player.kills}`)
             this.tableCell(`${player.deaths}`)
             this.tableCell(`${player.assists}`)
@@ -82,8 +83,8 @@ class Formatter {
             this.tableCell(`${player.denies}`)
             this.tableCell(`${Number.parseInt(player.gpm)}`)
             this.tableCell(`${Number.parseInt(player.xpm)}`)
-            this.tableCell(player.damage)
-            this.tableCell(player.healing)
+            this.tableCell(player.damage, "cell cell-extra")
+            this.tableCell(player.healing, "cell cell-extra")
             this.items(player.items)
             this.closeTableRow()
         }
@@ -98,7 +99,7 @@ class Formatter {
     }
 
     matchTableHeader() {
-        return this.openTableRow().tableCell("Hero").tableCell("Player", "cell cell-player").tableCell("K").tableCell("D").tableCell("A").tableCell("LH").tableCell("DN").tableCell("GPM").tableCell("XPM").tableCell("DMG").tableCell("Heal").tableCell("Items", "cell cell-item").closeTableRow()
+        return this.openTableRow().tableCell("Hero", "cell cell-hero-title").tableCell("Player", "cell cell-player").tableCell("K").tableCell("D").tableCell("A").tableCell("LH").tableCell("DN").tableCell("GPM").tableCell("XPM").tableCell("DMG", "cell cell-extra").tableCell("Heal", "cell cell-extra").tableCell("Items", "cell cell-item").closeTableRow()
     }
 
     date() {
@@ -135,11 +136,15 @@ class Render {
 
             formatter.closeDiv()
 
+            formatter.openDiv().closeDiv()
+
             formatter.direHeader()
             formatter.openDiv("table")
             formatter.direTeam()
 
             formatter.closeDiv()
+
+            formatter.page += `<script>document.querySelector('body').id = '${match.winner.toLowerCase()}-filter'</script>`
 
             callback(err, this.closeTemplate(formatter.page))
 

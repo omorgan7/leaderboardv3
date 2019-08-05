@@ -61,9 +61,16 @@ app.get(/\/matches\/(\d+)/, (req, res, next) => {
 
 app.get(/\/dota_assets\/(\w+\.(png|jpg))/, (req, res, next) => {
     fs.stat("./dota_assets/" + req.params[0], (err, stats) => {
-        if (err) return;
-        res.sendFile("./dota_assets/" + req.params[0], {root: './dota_assets/'})
+        if (err) {
+            console.log(err)
+            return
+        }
+        res.sendFile(req.params[0], {root: './dota_assets/'})
     })
+})
+
+app.get("/background.jpg", (req, res, next) => {
+    res.sendFile("background.jpg", {root: "./"})
 })
 
 app.get('/index.html', (req, res, next) => {
@@ -92,7 +99,7 @@ app.post('/create', (req, res, next) => {
     })
 })
 
-app.get('*', (req, res, next) => { 
+app.get('(*)', (req, res, next) => {
     res.sendStatus(404)
 })
 

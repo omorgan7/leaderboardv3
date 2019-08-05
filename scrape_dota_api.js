@@ -1,38 +1,71 @@
 const fs = require('fs')
 const http = require('http');
 
-let heroes = JSON.parse(fs.readFileSync("heroes.json", "utf8"))
-let items = JSON.parse(fs.readFileSync("items.json", "utf8"))
-
 function fileClose(response) {
     if (response.statusCode != 200) {
         console.log(`Error attempting to read ${this.url} with code ${response.statusCode}: ${response.statusMessage}`)
-        file.close()
-        fs.unlink(path, (err) => {if (err) console.log(err)})
         return
     }
-    const file = fs.createWriteStream("dota_assets/" + this.name + ".png")
+
+    const file = fs.createWriteStream("dota_assets/" + this.name)
     response.pipe(file)
     file.on('finish', () => {
         file.close()
     }).on('error', (err) => {
+        file.close()
         fs.unlink(path, (err) => {if (err) console.log(err)})
         console.log(err)
     })
 }
 
-for (const item of items.items) {
-    const request = http.get(item.url_image, fileClose.bind({name: item.name, url: item.url_image}))
-}
-
-for (const hero of heroes.heroes) {
-    const base = "http://cdn.dota2.com/apps/dota2/images/heroes/"
-    const name = hero.name.replace("npc_dota_hero_", "")
-
-    const appendices = ["_full.png", "_sb.png", "_lg.png", "_vert.jpg"]
-
-    for (const appendix of appendices) {
-        const url = base + name + appendix
-        const request = http.get(url, fileClose.bind({name: name + appendix, url: url}))
+http.get("http://api.steampowered.com/IEconDOTA2_570/GetHeroes/v1/?key=FD34336E950EBBF9290D6987141DF2C5", (response) => {
+    if (response.statusCode != 200) {
+        console.log(`Error attempting to read heroes json with code ${response.statusCode}: ${response.statusMessage}`)
+        return
     }
-}
+    response.setEncoding("utf8")
+    let str = ""
+    response.on("data", (chunk) => {
+        str += chunk
+    })
+
+    response.on("end", () => {
+        const heroes = JSON.parse(str).result
+
+        for (const hero of heroes.heroes) {
+            const base = "http://cdn.dota2.com/apps/dota2/images/heroes/"
+            const name = hero.name.replace("npc_dota_hero_", "")
+        
+            const appendices = ["_full.png", "_sb.png", "_lg.png", "_vert.jpg"]
+        
+            for (const appendix of appendices) {
+                const url = base + name + appendix
+                const request = http.get(url, fileClose.bind({name: name + appendix, url: url}))
+            }
+        }
+    })
+    
+})
+http.get("http://api.steampowered.com/IEconDOTA2_570/GetGameItems/v1/?key=FD34336E950EBBF9290D6987141DF2C5", (response) => {
+    if (response.statusCode != 200) {
+        console.log(`Error attempting to read items json with code ${response.statusCode}: ${response.statusMessage}`)
+        return
+    }
+
+    response.setEncoding("utf8")
+
+    let str = ""
+    response.on("data", (chunk) => {
+        str += chunk
+    })
+
+    response.on("end", () => {
+        const base = "http://cdn.dota2.com/apps/dota2/images/items/"
+        const items = JSON.parse(str).result
+
+        for (const item of items.items) {
+            const url = item.name.replace("item_", base) + "_lg.png"
+            const request = http.get(url, fileClose.bind({name: item.name + "_lg.png", url: url}))
+        }
+    })    
+})
