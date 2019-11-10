@@ -5,3 +5,4 @@ node_modules
 cached/*
 match_database.sqllite3
 .DS_Store
+secrets.json
