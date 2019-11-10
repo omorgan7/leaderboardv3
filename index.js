@@ -41,22 +41,38 @@ app.get('/', (req, res, next) => {
     sendHomePage(req, res);
 })
 
-app.get(/\/matches\/(\d+)/, (req, res, next) => {
+app.get(/\/matches\/(\d+)/, async (req, res, next) => {
     const matchID = parseInt(req.params[0])
     if (matchID == NaN) {
         res.sendStatus(404)
         return
     }
 
-    renderer.page(matchID, (err, page) => {
-        if (err) {
-            console.log(err)
-            res.sendStatus(404)
-            return 
-        }
-
+    try {
+        const page = await renderer.matchPage(matchID)
         res.send(page)
-    })
+    }
+    catch (err) {
+        console.log(err)
+        res.sendStatus(404)
+    }
+})
+
+app.get(/\/player\/(\d+)/, async (req, res, next) => {
+    const playerID = parseInt(req.params[0])
+    if (playerID == NaN) {
+        res.sendStatus(404)
+        return
+    }
+
+    try {
+        const page = await renderer.playerPage(playerID)
+        res.send(page)
+    }
+    catch (err) {
+        console.log(err)
+        res.sendStatus(404)
+    }
 })
 
 app.get(/\/dota_assets\/(\w+\.(png|jpg))/, (req, res, next) => {
@@ -67,6 +83,10 @@ app.get(/\/dota_assets\/(\w+\.(png|jpg))/, (req, res, next) => {
         }
         res.sendFile(req.params[0], {root: './dota_assets/'})
     })
+})
+
+app.get("/unknown_profile.jpg", (req, res, next) => {
+    res.sendFile("/unknown_profile.jpg", {root: "./steam_assets/"})
 })
 
 app.get("/background.jpg", (req, res, next) => {
@@ -88,12 +108,12 @@ app.post('/create', (req, res, next) => {
             console.log("Error: ", err, "With: ", fields, files)
             return
         }
-        parser.parseReplay(files.replay.path, (err, matchData) => {
+        parser.parseReplay(files.replay.path, async (err, matchData) => {
             if (err) {
                 console.log("Error: Replay parse error:", err)
                 return
             }
-            database.addMatch(db, matchData)
+            await database.addMatch(db, matchData)
         })
         res.redirect("/")
     })

@@ -1,12 +1,13 @@
 'use strict'
 
-const fs = require('fs')
+const fs = require('fs').promises
 const database = require('./database')
+const steam = require('./steam_api')
+const utilities = require('./utilities')
 
 class Formatter {
-    constructor(page, match) {
+    constructor(page) {
         this.page = page
-        this.match = match
     }
 
     div(className, str) {
@@ -108,72 +109,113 @@ class Formatter {
     }
 }
 
+class PlayerFormatter extends Formatter {
+    constructor(page, player) {
+        super(page)
+        this.player = player
+    }
+
+    playerName() {
+        return this.div("player-name", this.player.metadata.personaname)
+    }
+
+    profilePicture() {
+        return this.div("player-pic", `<img class=player-pic-img src='${this.player.metadata.avatarfull}'></img>`)
+    }
+
+    mmr() {
+        return this.openDiv("player-section").div("player-mmr-header", "MMR").div("player-mmr-value", "9999").closeDiv()
+    }
+
+    winLoss() {
+        return this.openDiv("player-section").div("player-wl-header", "Wins/Losses").div("player-wl-value", `${this.player.winCount} - ${this.player.lossCount}`).closeDiv()
+    }
+
+    winPercentage() {
+        const percent = this.player.winCount / this.player.matchCount * 100.0;
+        return this.openDiv("player-section").div("player-win-pc-header", "Win Rate").div("player-win-pc-value", `${percent.toFixed(1)}%`).closeDiv()
+    }
+
+}
+
 class Render {
     constructor(db) {
         this.db = db
-        this.templateString = fs.readFileSync("template.html", "utf8")
+        this.templateString = require('fs').readFileSync("template.html", "utf8")
     }
 
-    buildFile(matchID, callback) {
+    async buildPlayer(playerID) {
+        const fileName = `cached/${playerID}.html`
+
+        const player = await database.fetchPlayer(this.db, playerID)
+
+        let playerMetadata = {}
+        try {
+            playerMetadata = await steam.fetchLatestPlayerInformation(player.id)
+        }
+        catch (_) {
+            playerMetadata.avatarfull = "/unknown_profile.jpg"
+            playerMetadata.personaname = player.name
+            playerMetadata.profileurl = `https://steamcommunity.com/id/${player.steam_id}`
+        }
+        player.metadata = playerMetadata
+
+        const formatter = new PlayerFormatter(String(this.templateString), player)
+        
+        formatter.openDiv("player-header")
+        formatter.profilePicture().playerName().mmr().winLoss().winPercentage().closeDiv()
+
+        return this.closeTemplate(formatter.page)
+    }
+
+    async buildMatch(matchID) {
         const fileName = `cached/${matchID}.html`
 
-        database.fetchMatch(this.db, matchID, (err, match) => {
-            if (err) {
-                callback(err, null)
-                return
-            }
+        const match = await database.fetchMatch(this.db, matchID)
 
-            const formatter = new Formatter(String(this.templateString), match)
-            formatter.matchHeader()
-            formatter.date()
-            formatter.winner()
+        const formatter = new MatchFormatter(String(this.templateString), match)
+        formatter.matchHeader()
+        formatter.date()
+        formatter.winner()
 
-            formatter.radiantHeader()
-            formatter.openDiv("table")
+        formatter.radiantHeader()
+        formatter.openDiv("table")
 
-            formatter.matchTableHeader()
-            formatter.radiantTeam()
+        formatter.matchTableHeader()
+        formatter.radiantTeam()
 
-            formatter.closeDiv()
+        formatter.closeDiv()
 
-            formatter.openDiv().closeDiv()
+        formatter.openDiv().closeDiv()
 
-            formatter.direHeader()
-            formatter.openDiv("table")
-            formatter.direTeam()
+        formatter.direHeader()
+        formatter.openDiv("table")
+        formatter.direTeam()
 
-            formatter.closeDiv()
+        formatter.closeDiv()
 
-            formatter.page += `<script>document.querySelector('body').id = '${match.winner.toLowerCase()}-filter'</script>`
+        formatter.page += `<script>document.querySelector('body').id = '${utilities.teamIntToString(match.winner)}-filter'</script>`
 
-            callback(err, this.closeTemplate(formatter.page))
+        return this.closeTemplate(formatter.page)
 
-            // fs.writeFile(fileName, this.closeTemplate(page + JSON.stringify(match)), (err) => {
-            //     callback(err, err ? null : fileName)
-            // })
-        })
+        // fs.writeFile(fileName, this.closeTemplate(page + JSON.stringify(match)), (err) => {
+        //     callback(err, err ? null : fileName)
+        // })
     }
 
-    page(matchID, callback) {
-        database.isValidMatch(this.db, matchID, (err, isValid) => {
-            if (err) {
-                callback(err, null)
-            }
+    async matchPage(matchID) {
+        if (!await database.isValidMatch(this.db, matchID)) {
+            throw Error(`Attempted to access ${matchID}, but was not found in database.`)
+        }
+        return this.buildMatch(matchID)
+    }
 
-            if (!isValid) {
-                callback(Error(`Attempted to access ${matchID}, but was not found in database.`), null)
-                return
-            }
+    async playerPage(playerID) {
+        if (!await database.isValidPlayer(this.db, playerID)) {
+            throw Error(`Attempted to access ${playerID}, but was not found in database.`)
+        }
 
-            const cachedFile = `cached/${matchID}.html`
-            fs.exists(cachedFile, (exists) => {
-                // if (!exists) {
-                    this.buildFile(matchID, callback)
-                    // return
-                // }
-                // callback(null, cachedFile)
-            })
-        })
+        return this.buildPlayer(playerID)
     }
     
     closeTemplate(page) {

@@ -10,7 +10,7 @@ function fileFromStdOut(stdout) {
     // validate stdout
     const matched = /^[\d]+\.json$/.exec(fileName)
     if (matched == null) {
-        console.log("Invalid output from stdout from parser", fileName)
+        console.log("Invalid output from stdout from parser:", stdout)
         return null
     }
 
@@ -27,7 +27,13 @@ exports.parseReplay = function(fileName, callback) {
             return
         }
 
-        const tempName = fileFromStdOut(stdout)    
+        const tempName = fileFromStdOut(stdout)
+        if (!tempName)
+        {
+            callback("Replay parse failed.", null)
+            return
+        }
+        
         const fileName = "replays/" + tempName
 
         fs.rename(tempName, fileName, (err) => {
