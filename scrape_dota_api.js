@@ -1,5 +1,6 @@
 const fs = require('fs')
-const http = require('http');
+const http = require('https')
+const secrets = require('./secrets')
 
 function fileClose(response) {
     if (response.statusCode != 200) {
@@ -18,7 +19,7 @@ function fileClose(response) {
     })
 }
 
-http.get("http://api.steampowered.com/IEconDOTA2_570/GetHeroes/v1/?key=FD34336E950EBBF9290D6987141DF2C5", (response) => {
+http.get(`https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v1/?key=${secrets.steamKey}`, (response) => {
     if (response.statusCode != 200) {
         console.log(`Error attempting to read heroes json with code ${response.statusCode}: ${response.statusMessage}`)
         return
@@ -33,7 +34,7 @@ http.get("http://api.steampowered.com/IEconDOTA2_570/GetHeroes/v1/?key=FD34336E9
         const heroes = JSON.parse(str).result
 
         for (const hero of heroes.heroes) {
-            const base = "http://cdn.dota2.com/apps/dota2/images/heroes/"
+            const base = "https://cdn.dota2.com/apps/dota2/images/heroes/"
             const name = hero.name.replace("npc_dota_hero_", "")
         
             const appendices = ["_full.png", "_sb.png", "_lg.png", "_vert.jpg"]
@@ -46,7 +47,7 @@ http.get("http://api.steampowered.com/IEconDOTA2_570/GetHeroes/v1/?key=FD34336E9
     })
     
 })
-http.get("http://api.steampowered.com/IEconDOTA2_570/GetGameItems/v1/?key=FD34336E950EBBF9290D6987141DF2C5", (response) => {
+http.get(`https://api.steampowered.com/IEconDOTA2_570/GetGameItems/v1/?key=${secrets.steamKey}`, (response) => {
     if (response.statusCode != 200) {
         console.log(`Error attempting to read items json with code ${response.statusCode}: ${response.statusMessage}`)
         return
@@ -60,7 +61,7 @@ http.get("http://api.steampowered.com/IEconDOTA2_570/GetGameItems/v1/?key=FD3433
     })
 
     response.on("end", () => {
-        const base = "http://cdn.dota2.com/apps/dota2/images/items/"
+        const base = "https://cdn.dota2.com/apps/dota2/images/items/"
         const items = JSON.parse(str).result
 
         for (const item of items.items) {

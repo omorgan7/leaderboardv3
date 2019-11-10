@@ -9,6 +9,7 @@ const cookieParser = require('cookie-parser')
 const crypto = require('bcryptjs')
 const formidable = require('formidable')
 const fs = require('fs')
+const secrets = require('./secrets')
 
 const app = express()
 
@@ -18,8 +19,7 @@ const loginCookieOptions = {
     signed : true
 }
 
-// todo: wire up a proper secret.
-app.use(cookieParser("a"))
+app.use(cookieParser(secrets.cookieSecret))
 app.use(express.json())
 
 function sendHomePage(req, res) {

@@ -37,9 +37,17 @@ class Formatter {
     closeTableRow() {
         return this.closeDiv()
     }
+}
+
+class MatchFormatter extends Formatter {
+
+    constructor(page, match) {
+        super(page)
+        this.match = match
+    }
 
     winner() {
-        const winner = this.match.winner + " Victory"
+        const winner = this.match.winner == utilities.RADIANT ? "Radiant Victory" : "Dire Victory"
         return this.div("winner " + winner, winner)
     }
 
@@ -76,7 +84,7 @@ class Formatter {
             if (name.length > 20) {
                 name = name.slice(0, 15) + "..."
             }
-            this.tableCell(`<a href=/player/${player.steam_id}> ${name}</a>`, "cell cell-player")
+            this.tableCell(`<a href=/player/${player.id32}> ${name}</a>`, "cell cell-player")
             this.tableCell(`${player.kills}`)
             this.tableCell(`${player.deaths}`)
             this.tableCell(`${player.assists}`)
@@ -92,11 +100,11 @@ class Formatter {
     }
 
     direTeam() {
-        return this.team(this.match.player.slice(5, 10))
+        return this.team(this.match.player.filter(player => player.game_team == utilities.DIRE))
     }
 
     radiantTeam() {
-        return this.team(this.match.player.slice(0, 5))
+        return this.team(this.match.player.filter(player => player.game_team == utilities.RADIANT))
     }
 
     matchTableHeader() {

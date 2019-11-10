@@ -1,19 +1,27 @@
 * {
     color: white;
 }
+
 h1, h3, .match-header, .winner, .radiant.header, .dire.header, .date {
     font-family: 'Cinzel', serif;
 }
-label {
+
+label, .player-name {
     font-family: 'Open Sans', sans-serif;
 }
+
+.player-name {
+    font-size: 1.6em;
+    text-align: left;
+}
+
 h2 {
     font-family: 'Open Sans', sans-serif;
     font-size: 0.2em;
     text-align: right;
 }
 
-h3, .table {
+h3, .table, .player-header {
     margin-left: 12vw;
 }
 
@@ -104,11 +112,12 @@ h1, .match-header {
     margin-bottom: 0.1em;
     font-size: 3em;
 }
-/*  */
+
 tr {
     height: 60px;
     background-color: rgba(0, 0, 0, 0.4);
 }
+
 td, .cell {
     font-family: 'Open Sans', sans-serif;
     font-size: 0.5vmax;
@@ -120,9 +129,11 @@ td, .cell {
     position: relative;
     width: auto;
 }
+
 .cell.cell-hero-title, .cell.cell-hero-img {
     margin-left: 5px;
 }
+
 .cell.cell-hero-img {
     position: relative;
     top: 0%;
@@ -163,16 +174,65 @@ td, .cell {
     filter: brightness(0.4);
 }
 
-.table {
-    display: table;
+.table, .player-header {
     text-align: left;
     width: 80vw;
-    border-spacing: 10 5;    
+    border-spacing: 10 5; 
 }
 
+.table {
+    display: table;
+}
+
+.player-wl-header, .player-mmr-header, .player-win-pc-header {
+    font-family: 'Cinzel', serif;
+    font-size: 1.2em;
+}
+
+.player-name {
+    margin-right: 10%;
+}
+
+.player-section {
+    float: left;
+    clear: left;
+    margin-left: 10%;
+}
+
+.player-wl-value, .player-mmr-value, .player-win-pc-value {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 1em;
+}
+
+.player-header {
+    display: flex;
+    align-items: center;
+}
+
+.player-header {
+    height: 120px;
+}
+
+.player-name, .player-pic {
+    float: left;
+    overflow: auto;
+    position: relative;
+}
+
+.player-pic {
+    margin: 20px;
+}
+
+.player-pic-img {
+    height: 80px;
+}
+
+.player-header {
+    background-color: rgba(27, 29, 59, 0.4)
+}
 
 @media screen and (max-width: 850px) {
-    .table {
+    .table, .player-header {
         width: 100%;
         margin-left: 0;
     }
