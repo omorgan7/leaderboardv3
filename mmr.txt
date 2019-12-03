@@ -1,0 +1,31 @@
+###  BASICS  ###
+
+#Start everyone at 2000MMR
+#After every game, compare average MMR of both teams. Standard MMR change is +/-25 with perfect balance.
+#For every 50 MMR difference (in team average), MMR change should be increased by 1,2,3, up to 5 for each 50 MMR interval.
+#e.g. Team 1 (2000MMR) vs Team 2 (2115MMR) results in a +/-28MMR change if Team 1 wins, and a +/-22MMR change if Team 2 wins.
+#(25+(1+2) or 25-(1+2)). We'd also need a minimum MMR change to be set (something like +/-5) so that we don't have
+#+/-0MMR changes happening at average MMR differences of greater than 350. We'd then also set a maximum MMR change threshold
+#of 50, less the minimum MMR change.
+
+
+###  CALIBRATION ###
+
+#The first 5 games that any player takes part in will be their 'calibration games'
+#In these games, they will receive a multiplier on their base MMR change which decreases throughout the calibration period.
+#Initially, I'd suggest starting this multiplier at 2.0, then decreasing to 1.8, 1.6, 1.4, 1.2.
+
+###  STREAKS  ###
+#After calibration games, a win-streak/loss-streak system will come into play.
+#After winning at least 2 out of 3 games, the next win will result in a 1.2x multiplier being applied to the base MMR change.
+#Replace winning with losing for loss-streak rules.
+#Essentially, you don't lose the streak until you go into the other type of streak (sounds a little weird).
+
+
+### BASIC STEPS ###
+#Find MMRs of players in the game
+#Calculate team averages
+#Compare team averages to find MMR balance number
+#For each player, check if they are in calibration or not. If so, apply the relevant multiplier.
+#If out of calibration, check which kind of streak the player is on and apply the relevant multiplier if the streak continues.
+#adjust MMR using the now modified MMR changes.
