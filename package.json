@@ -10,6 +10,7 @@
     "scrape-server": "node scrape_dota_api.js",
     "java-build": "pushd mjollnir; mvn package; popd",
     "test": "find tests -name '*.js' | xargs -I '{}' node {}",
+    "rebuild-db": "rm -f match_database.sqllite3 && node -e \"require('./database').createDatabase().then((_)=>console.log('New db created'))\"",
     "dev": "npx supervisor index.js"
   },
   "repository": {
