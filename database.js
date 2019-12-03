@@ -17,7 +17,7 @@ exports.createDatabase = async function() {
     await db.runAsync("CREATE TABLE player_table(id char, id32 bigint, name char)")
 
     // This table, after match_id, is sorted by key.
-    await db.runAsync("CREATE TABLE match_player_table(match_id bigint, assists int, damage int, deaths int, denies int, game_team int, gpm float, healing int, hero_name char, id32 bigint, items char, kills int, last_hits int, level int, player_name char, steam_id char, xpm float)")
+    await db.runAsync("CREATE TABLE match_player_table(match_id bigint, assists int, buffs char, damage int, deaths int, denies int, game_team int, gpm float, healing int, hero_name char, id32 bigint, items char, kills int, last_hits int, level int, player_name char, steam_id char, xpm float)")
 
     return db
 }
@@ -94,8 +94,10 @@ exports.addMatch = async function(db, matchData) {
 
     // sort all match keys by alphabetical order within the table
     // and prepare for sql statement
+
     const matchPlayers = matchData.players.map((player) => {
         player.items = player.items.reduce((bigStr, thisStr) => bigStr.concat(",", thisStr))
+        player.buffs = player.buffs ? player.buffs.reduce((bigStr, thisStr) => bigStr.concat(",", thisStr)) : ""
         const values = Object.keys(player).sort().map((key) => player[key])
         return [matchData.match_id, ...values]
     })
@@ -105,5 +107,5 @@ exports.addMatch = async function(db, matchData) {
     let smallValue = "(" + "?, ".repeat(matchPlayers[0].length).slice(0, -2) + "),"
     valueString = smallValue.repeat(matchPlayers.length).slice(0, -1)
 
-    await db.runAsync("INSERT INTO match_player_table(match_id, assists, damage, deaths, denies, game_team, gpm, healing, hero_name, id32, items, kills, last_hits, level, player_name, steam_id, xpm) VALUES" + valueString, matchPlayers.flat())
+    await db.runAsync("INSERT INTO match_player_table(match_id, assists, buffs, damage, deaths, denies, game_team, gpm, healing, hero_name, id32, items, kills, last_hits, level, player_name, steam_id, xpm) VALUES" + valueString, matchPlayers.flat())
 }
