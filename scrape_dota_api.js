@@ -8,13 +8,19 @@ function fileClose(response) {
         return
     }
 
-    const file = fs.createWriteStream("dota_assets/" + this.name)
+    const path = "dota_assets/" + this.name;
+    const file = fs.createWriteStream(path)
     response.pipe(file)
     file.on('finish', () => {
         file.close()
     }).on('error', (err) => {
         file.close()
-        fs.unlink(path, (err) => {if (err) console.log(err)})
+        fs.exists(path, (exists) => {
+                if (exists) {
+                    fs.unlink(path, (err) => {if (err) console.log(err)})
+                }
+            })
+        
         console.log(err)
     })
 }
@@ -41,7 +47,13 @@ http.get(`https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v1/?key=${secret
         
             for (const appendix of appendices) {
                 const url = base + name + appendix
-                const request = http.get(url, fileClose.bind({name: name + appendix, url: url}))
+                
+                setTimeout( () => {
+                    console.log("Fetching: " + url)
+                    const request = http.get(url, {rejectUnauthorized: false}, fileClose.bind({name: name + appendix, url: url}))
+                    .on('error', (err) => console.log("Bad response reading " + url))
+                }, 200)
+
             }
         }
     })
@@ -66,7 +78,13 @@ http.get(`https://api.steampowered.com/IEconDOTA2_570/GetGameItems/v1/?key=${sec
 
         for (const item of items.items) {
             const url = item.name.replace("item_", base) + "_lg.png"
-            const request = http.get(url, fileClose.bind({name: item.name + "_lg.png", url: url}))
+            
+            setTimeout(() => {
+                console.log("Fetching: " + url)
+                const request = http.get(url, {rejectUnauthorized: false}, fileClose.bind({name: item.name + "_lg.png", url: url}))
+                .on('error', (err) => console.log("Bad response reading " + url))
+            }, 200)
+
         }
     })    
 })

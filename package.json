@@ -7,7 +7,7 @@
     "start": "node index.js",
     "clear-caches": "pushd cached; rm -- *.html; popd",
     "clear-replays": "pushd replays; rm -- *; popd",
-    "scrape-server": "node scrape_dota_api.js",
+    "scrape-server": "mkdir -p dota_assets && node scrape_dota_api.js",
     "java-build": "pushd mjollnir; mvn package; popd",
     "test": "find tests -name '*.js' | xargs -I '{}' node {}",
     "rebuild-db": "rm -f match_database.sqllite3 && node -e \"require('./database').createDatabase().then((_)=>console.log('New db created'))\"",
