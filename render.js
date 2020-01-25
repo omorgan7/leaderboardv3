@@ -5,6 +5,20 @@ const database = require('./database')
 const steam = require('./steam_api')
 const utilities = require('./utilities')
 
+function fixupBuffs(buffs) {
+    // add new fixups here as they arrive
+    const fixed = {
+        "item_ultimatescepter_2" : "item_ultimate_scepter",
+        "item_moonshard" : "item_moon_shard"
+    }
+    Object.keys(buffs).forEach((buff) => {
+        if (fixed.hasOwnProperty(buff)) {
+            buffs[fixed[buff]] = buffs[buff]
+            delete buffs[buff]
+        }
+    })
+}
+
 class Formatter {
     constructor(page) {
         this.page = page
