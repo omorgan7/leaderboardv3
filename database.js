@@ -11,7 +11,7 @@ sql.createDatabaseAsync = promisify(sql.Database)
 const dbName = "match_database.sqllite3"
 
 exports.createDatabase = async function() {
-    const db = await exports.startDatabase()
+    const db = exports.startDatabase()
 
     await db.runAsync("CREATE TABLE match_table(id bigint, duration float, winner int, timestamp bigint)")
     await db.runAsync("CREATE TABLE player_table(id char, id32 bigint, name char)")
