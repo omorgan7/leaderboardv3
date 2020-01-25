@@ -101,9 +101,20 @@ exports.addMatch = async function(db, matchData) {
     // sort all match keys by alphabetical order within the table
     // and prepare for sql statement
 
+    const strReduce = (bigStr, thisStr) => bigStr.concat(",", thisStr)
+
     const matchPlayers = matchData.players.map((player) => {
-        player.items = player.items.reduce((bigStr, thisStr) => bigStr.concat(",", thisStr))
-        player.buffs = player.buffs ? player.buffs.reduce((bigStr, thisStr) => bigStr.concat(",", thisStr)) : ""
+        player.items = player.items.reduce(strReduce)
+
+        if (player.buffs == undefined) {
+            player.buffs = ""
+        }
+        else {
+            player.buffs = Object.entries(player.buffs)
+                                 .flat()
+                                 .reduce(strReduce)
+        }
+        
         const values = Object.keys(player).sort().map((key) => player[key])
         return [matchData.match_id, ...values]
     })
