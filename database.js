@@ -52,6 +52,12 @@ exports.fetchMatch = async function(db, matchID) {
     return match
 }
 
+exports.fetchMatchesForPlayer = async function(db, id32, matchCount) {
+    const matches = await db.getAsync("SELECT * FROM match_player_table INNER JOIN match_table on match_table.id = match_player_table.match_id WHERE id32 = ? ORDER BY match_id DESC LIMIT ?", id32, matchCount)
+
+    return matches
+}
+
 exports.fetchPlayer = async function(db, id32) {
     const player = await db.getAsync("SELECT * from player_table WHERE id32 = ?", id32)
     
