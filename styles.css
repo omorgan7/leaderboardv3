@@ -22,16 +22,24 @@ h2 {
 }
 
 h3, .table, .player-header {
-    margin-left: 12vw;
+    margin-left: 7vw;
 }
 
 .radiant.header, .dire.header {
-    margin-left: 13.4vw;
+    margin-left: 8.4vw;
     text-align: left;
 }
 
+.table-row.radiant {
+    background-color: #17eabc48;
+}
+
 .radiant {
-    color: #17eabb;
+    color: #17eabc;
+}
+
+.table-row.dire {
+    background-color: #e52f1848
 }
 
 .dire {
@@ -152,6 +160,9 @@ td, .cell {
     .cell.cell-extra {
         display: none;
     }
+    .cell.cell-buff {
+        display: none;
+    }
 }
 .cell.cell-player {
     width: 18%;
@@ -161,6 +172,26 @@ td, .cell {
 .cell-item-img {
     max-height: 50%;
     float: left;
+}
+.cell-buff-img {
+    height: 100%;
+    z-index: 0;
+    /* position: absolute; */
+    /* float: left; */
+    clear: left;
+
+}
+
+.cell-buff-value {
+    /* clear: left; */
+    font-size: 8pt;
+    position: relative;
+    bottom: 11pt;
+    left: 20px;
+    z-index: 1;
+    width: 10px;
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.3);
 }
 
 .cell.cell-item.cell-item-adjust {
@@ -240,6 +271,9 @@ td, .cell {
         margin-left: 0;
         text-align: center;
     }
+    .cell.cell-buff {
+        display: none;
+    }
 }
 
 .table-row {
@@ -255,17 +289,29 @@ td, .cell {
     overflow: auto;
     position: relative;
     top: 25%;
-    width: 5.5%;
+    width: 4.7%;
     height: 100%;
-    margin-right: 1px;
+    margin-right: 3px;
 }
 
 .cell.cell-item {
-    width: 23%;
+    width: 20%;
     /* min-width: 10%; */
     /* max-width: 25%; */
     height: 100%;
     clear: right;
+}
+
+.cell.cell-buff {
+    width: 7%;
+    margin-right: 2%;
+    height: 100%;
+}
+
+.cell-buff-modifier {
+    /* clear: left; */
+    height: 50%;
+    float: left;
 }
 
 #login-fail {

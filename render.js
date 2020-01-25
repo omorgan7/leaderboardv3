@@ -25,7 +25,7 @@ class Formatter {
     }
 
     div(className, str) {
-        this.page = this.page + "<div class='" + className + "'>" + str + "</div>"
+        this.page = this.page + "<div class='" + className + "'>" + str + "</div>\n"
         return this
     }
 
@@ -39,8 +39,8 @@ class Formatter {
         return this
     }
 
-    openTableRow() {
-        return this.openDiv("table-row")
+    openTableRow(className) {
+        return this.openDiv("table-row " + (className == undefined ? "" : className))
     }
 
     tableCell(data, className) {
@@ -51,6 +51,52 @@ class Formatter {
     closeTableRow() {
         return this.closeDiv()
     }
+
+    hero(hero) {
+        const heroStr = hero.replace("npc_dota_hero_", "<img class='match-hero-img' src='/dota_assets/") + "_vert.jpg'>"
+
+        return this.tableCell(heroStr, "cell cell-hero-img")
+    }
+
+    items(itemsStr) {
+        const items = itemsStr.split(",").map((item) => "/dota_assets/" + item + "_lg.png")
+
+        let extraClass = items.length > 6 ? "cell cell-item cell-item-adjust" : "cell cell-item"
+        return this.tableCell(
+            items.slice(0, 6)
+            .reduce((prev, next) => prev + "<img class='cell-item-img' src='" + next + "'>", "")
+            + items.slice(6)
+            .reduce((prev, next) => prev + "<img class='cell-bp-img' src='" + next + "'>", ""), extraClass)
+    }
+
+    buffs(buffsStr) {
+        if (buffsStr === "") {
+            return this.tableCell("", "cell cell-buff")
+        }
+
+        const allbuffs = buffsStr.split(",")
+
+        // allBuffs is comma separated by buffname, then the buff count
+        const buffmap = {}
+
+        for (let i = 0; i < allbuffs.length; i += 2) {
+            buffmap[allbuffs[i].slice(6).toLowerCase()] = +allbuffs[i + 1]
+        }
+
+        fixupBuffs(buffmap)
+
+        const buffCell = []
+
+        for (const [buffName, buffValue] of Object.entries(buffmap)) {
+            buffCell.push(
+                `<div class='cell-buff-modifier'><img class='cell-buff-img' src='/dota_assets/${buffName}_lg.png'>`
+                + (buffValue == 1 ? "" : `<div class='cell-buff-value'>${buffValue}</div>`) + "</div>")
+        }
+
+        return this.tableCell(
+            buffCell.reduce((prev, next) => prev + next), "cell cell-buff cell-item cell-item-adjust")
+    }
+
 }
 
 class MatchFormatter extends Formatter {
@@ -77,19 +123,6 @@ class MatchFormatter extends Formatter {
         return this.div("dire header", "Dire team")
     }
 
-    hero(hero) {
-        const heroStr = hero.replace("npc_dota_hero_", "<img class='match-hero-img' src='/dota_assets/") + "_vert.jpg'>"
-
-        return this.tableCell(heroStr, "cell cell-hero-img")
-    }
-
-    items(itemsStr) {
-        const items = itemsStr.split(",").map((item) => "/dota_assets/" + item + "_lg.png")
-
-        let extraClass = items.length > 6 ? "cell cell-item cell-item-adjust" : "cell cell-item"
-        return this.tableCell(items.slice(0, 6).reduce((prev, next) => prev + "<img class='cell-item-img' src='" + next + "'>", "")+ items.slice(6).reduce((prev, next) => prev + "<img class='cell-bp-img' src='" + next + "'>", ""), extraClass)
-    }
-
     team(players) {
         for (let player of players) {
             this.openTableRow()
@@ -108,6 +141,7 @@ class MatchFormatter extends Formatter {
             this.tableCell(`${Number.parseInt(player.xpm)}`)
             this.tableCell(player.damage, "cell cell-extra")
             this.tableCell(player.healing, "cell cell-extra")
+            this.buffs(player.buffs)
             this.items(player.items)
             this.closeTableRow()
         }
@@ -122,7 +156,21 @@ class MatchFormatter extends Formatter {
     }
 
     matchTableHeader() {
-        return this.openTableRow().tableCell("Hero", "cell cell-hero-title").tableCell("Player", "cell cell-player").tableCell("K").tableCell("D").tableCell("A").tableCell("LH").tableCell("DN").tableCell("GPM").tableCell("XPM").tableCell("DMG", "cell cell-extra").tableCell("Heal", "cell cell-extra").tableCell("Items", "cell cell-item").closeTableRow()
+        return this
+        .openTableRow()
+        .tableCell("Hero", "cell cell-hero-title")
+        .tableCell("Player", "cell cell-player")
+        .tableCell("K")
+        .tableCell("D")
+        .tableCell("A")
+        .tableCell("LH")
+        .tableCell("DN")
+        .tableCell("GPM")
+        .tableCell("XPM")
+        .tableCell("DMG", "cell cell-extra")
+        .tableCell("Heal", "cell cell-extra")
+        .tableCell("Buffs", "cell cell-buff")
+        .tableCell("Items", "cell cell-item").closeTableRow()
     }
 
     date() {
@@ -158,6 +206,52 @@ class PlayerFormatter extends Formatter {
         return this.openDiv("player-section").div("player-win-pc-header", "Win Rate").div("player-win-pc-value", `${percent.toFixed(1)}%`).closeDiv()
     }
 
+    playerMatchTableHeader() {
+        return this
+        .openTableRow()
+        .tableCell("Hero", "cell cell-hero-title")
+        .tableCell("Date")
+        .tableCell("Team")
+        .tableCell("Victory")
+        .tableCell("Match ID")
+        .tableCell("K")
+        .tableCell("D")
+        .tableCell("A")
+        .tableCell("LH")
+        .tableCell("DN")
+        .tableCell("GPM")
+        .tableCell("XPM")
+        .tableCell("Items", "cell cell-item").closeTableRow()
+    }
+
+    matches(matches) {
+        for (let match of matches) {
+            const winner = match.winner == match.game_team;
+
+            this.openTableRow(winner ? "radiant" : "dire")
+            this.hero(match.hero_name)
+
+            const date = new Date(match.timestamp * 1000)
+            this.tableCell(`${date.getUTCFullYear()}/` + `${date.getMonth() + 1}`.padStart(2, "0") + '/' + `${date.getUTCDay() - 1}`.padStart(2, "0"))
+
+            let team = utilities.teamIntToString(match.game_team)
+            team = team.charAt(0).toLocaleUpperCase() + team.substr(1)
+            this.tableCell(team)
+
+            this.tableCell(winner ? "Victory" : "Defeat")
+            this.tableCell(`<a href=/matches/${match.match_id}> #${match.match_id}</a>`)
+            this.tableCell(`${match.kills}`)
+            this.tableCell(`${match.deaths}`)
+            this.tableCell(`${match.assists}`)
+            this.tableCell(`${match.last_hits}`)
+            this.tableCell(`${match.denies}`)
+            this.tableCell(`${Number.parseInt(match.gpm)}`)
+            this.tableCell(`${Number.parseInt(match.xpm)}`)
+            this.items(match.items)
+            this.closeTableRow()
+        }
+    }
+
 }
 
 class Render {
@@ -169,7 +263,10 @@ class Render {
     async buildPlayer(playerID) {
         const fileName = `cached/${playerID}.html`
 
+        const matchesPerPage = 20
+
         const player = await database.fetchPlayer(this.db, playerID)
+        let matches = await database.fetchMatchesForPlayer(this.db, playerID, matchesPerPage)
 
         let playerMetadata = {}
         try {
@@ -186,6 +283,15 @@ class Render {
         
         formatter.openDiv("player-header")
         formatter.profilePicture().playerName().mmr().winLoss().winPercentage().closeDiv()
+
+        formatter.openDiv("table")
+        if (typeof matches !== Array) {
+            const tmp = []
+            tmp.push(matches)
+            matches = tmp
+        }
+        formatter.playerMatchTableHeader().matches(matches)
+        formatter.closeDiv()
 
         return this.closeTemplate(formatter.page)
     }
