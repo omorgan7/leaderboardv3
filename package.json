@@ -10,8 +10,10 @@
     "scrape-server": "mkdir -p dota_assets && node scrape_dota_api.js",
     "java-build": "pushd mjollnir; mvn package; popd",
     "test": "find tests -name '*.js' | xargs -I '{}' node {}",
+    "generate-secrets": "echo '{\"steam_api_key\": \"API_KEY\", \"cookie_secret\": \"cookieSecret\"}' > secrets.json",
     "rebuild-db": "rm -f match_database.sqllite3 && node -e \"require('./database').createDatabase().then((_)=>console.log('New db created'))\"",
-    "dev": "npx supervisor index.js"
+    "dev": "npx supervisor index.js",
+    "bootstrap": "npm update && git submodule init && git submodule update && npm run java-build && npm run rebuild-db && mkdir -p replays && mkdir -p cached && npm run generate-secrets && npm run scrape-server"
   },
   "repository": {
     "type": "git",
