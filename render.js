@@ -268,6 +268,10 @@ class Render {
         const player = await database.fetchPlayer(this.db, playerID)
         let matches = await database.fetchMatchesForPlayer(this.db, playerID, matchesPerPage)
 
+        let calibration = await database.playerCalibrating(this.db, playerID, 2)
+        let streak = await database.playerOnStreak(this.db, playerID, 2)
+        console.log(`calibration: ${calibration} ${playerID}`)
+
         let playerMetadata = {}
         try {
             playerMetadata = await steam.fetchLatestPlayerInformation(player.id)
@@ -285,7 +289,7 @@ class Render {
         formatter.profilePicture().playerName().mmr().winLoss().winPercentage().closeDiv()
 
         formatter.openDiv("table")
-        if (typeof matches !== Array) {
+        if (!Array.isArray(matches)) {
             const tmp = []
             tmp.push(matches)
             matches = tmp

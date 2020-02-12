@@ -53,9 +53,45 @@ exports.fetchMatch = async function(db, matchID) {
 }
 
 exports.fetchMatchesForPlayer = async function(db, id32, matchCount) {
-    const matches = await db.getAsync("SELECT * FROM match_player_table INNER JOIN match_table on match_table.id = match_player_table.match_id WHERE id32 = ? ORDER BY match_id DESC LIMIT ?", id32, matchCount)
+    const matches = await db.allAsync("SELECT * FROM match_player_table INNER JOIN match_table on match_table.id = match_player_table.match_id WHERE id32 = ? ORDER BY match_id DESC LIMIT ?", id32, matchCount)
 
     return matches
+}
+
+exports.playerOnStreak = async function(db, id32, streakCount) {
+    // const query = await db.allAsync(`
+    //     select match_player_table.[name], count(subquery1.temp)
+    //     from(
+    //         select match_player_table.[name](
+    //             row_number() over(
+    //                 order by match_player_table.[id]
+    //             )
+    //             - row_number() over(
+    //                 partition by match.[win_lose_status]  order by match_player_table.[id]
+    //             ) as temp
+    //             from match
+    //                 left join match_player_table
+    //                 on match.[id] = match_player_table.[match_id] ) ) subquery1
+        
+    //     group by temp, match_player_table.[name]
+    // `)
+
+    const query = await db.allAsync(`
+    SELECT * FROM ((match_player_table INNER JOIN match_table on match_table.id = match_player_table.match_id) as temp) WHERE id32 = ? AND temp.game_team = temp.winner ORDER BY match_id DESC
+    `, id32)
+
+    return query
+}
+
+exports.playerCalibrating = async function(db, id32, calibrationCount) {
+    // const matchCount = (await db.getAsync("SELECT COUNT(*) FROM match_player_table where id32 = ?", id32))["COUNT(*)"]
+    const query = await db.getAsync(`
+    SELECT
+    CASE
+        WHEN COUNT(id32) < ? THEN true ELSE false
+    END AS calibration
+    FROM match_player_table WHERE id32 = ?`, calibrationCount, id32)
+    return query.calibration 
 }
 
 exports.fetchPlayer = async function(db, id32) {
@@ -87,20 +123,35 @@ exports.addMatch = async function(db, matchData) {
         player.id32 = utilities.maskBottom32Bits(BigInt(player.steam_id))
     }
 
-    const players = matchData.players.map((player) => 
-        [player.steam_id, player.id32, player.player_name]
+    const players = matchData.players.map((player) => ({
+            steam_id: player.steam_id,
+            id32: player.id32,
+            player_name: player.player_name
+        })
     )
 
-    let valueString = "(?, ?, ?),".repeat(players.length).slice(0, -1)
-    // const validPlayers = await exports.validPlayers(db, players.map(player => player.id32))
+    
+    const existingPlayers = await exports.validPlayers(db, players.map(player => player.id32))
 
-    // this might create duplicate players because a player might change their name.
-    // maybe check if the ID exists already?
-    db.runAsync("INSERT INTO player_table(id, id32, name) VALUES" + valueString, players.flat())
+    // don't add duplicate players
+    // unfortunately this prevents a player from updating his/her name.
+    // We fetch that information from steam anyway (when available)
+    let newPlayers = players.filter((player) => {
+        for (const p of existingPlayers) {
+            if (p.id32 == player.id32) {
+                return false
+            }
+        }
+        return true
+    })
+
+    if (newPlayers.length > 0) {
+        let valueString = "(?, ?, ?),".repeat(newPlayers.length).slice(0, -1)
+        await db.runAsync("INSERT INTO player_table(id, id32, name) VALUES" + valueString, newPlayers.map((player) => Object.values(player)).flat())
+    }
 
     // sort all match keys by alphabetical order within the table
     // and prepare for sql statement
-
     const strReduce = (bigStr, thisStr) => bigStr.concat(",", thisStr)
 
     const matchPlayers = matchData.players.map((player) => {
@@ -122,7 +173,7 @@ exports.addMatch = async function(db, matchData) {
     // I don't believe this can lead to an SQL injection because a value string is
     // built off the length rather than inserted in directly.
     let smallValue = "(" + "?, ".repeat(matchPlayers[0].length).slice(0, -2) + "),"
-    valueString = smallValue.repeat(matchPlayers.length).slice(0, -1)
+    let valueString = smallValue.repeat(matchPlayers.length).slice(0, -1)
 
     await db.runAsync("INSERT INTO match_player_table(match_id, assists, buffs, damage, deaths, denies, game_team, gpm, healing, hero_name, id32, items, kills, last_hits, level, player_name, steam_id, xpm) VALUES" + valueString, matchPlayers.flat())
 }
