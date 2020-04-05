@@ -76,8 +76,20 @@ exports.playerOnStreak = async function(db, id32, streakCount) {
     //     group by temp, match_player_table.[name]
     // `)
 
-    const query = await db.allAsync(`
-    SELECT * FROM ((match_player_table INNER JOIN match_table on match_table.id = match_player_table.match_id) as temp) WHERE id32 = ? AND temp.game_team = temp.winner ORDER BY match_id DESC
+    const query = await db.getAsync(`
+    SELECT win_loss, count(temp.win_loss) AS streak_length FROM
+    (SELECT winner, game_team,
+        CASE
+            WHEN game_team = winner then true
+            ELSE false
+        END as win_loss
+        FROM match_player_table
+            INNER JOIN match_table
+            ON match_table.id = match_player_table.match_id
+            WHERE id32 = ?
+            ORDER BY match_id DESC)
+        AS temp
+    GROUP BY temp.win_loss LIMIT 1
     `, id32)
 
     return query
