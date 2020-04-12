@@ -59,37 +59,52 @@ exports.fetchMatchesForPlayer = async function(db, id32, matchCount) {
 }
 
 exports.playerOnStreak = async function(db, id32, streakCount) {
-    // const query = await db.allAsync(`
-    //     select match_player_table.[name], count(subquery1.temp)
-    //     from(
-    //         select match_player_table.[name](
-    //             row_number() over(
-    //                 order by match_player_table.[id]
-    //             )
-    //             - row_number() over(
-    //                 partition by match.[win_lose_status]  order by match_player_table.[id]
-    //             ) as temp
-    //             from match
-    //                 left join match_player_table
-    //                 on match.[id] = match_player_table.[match_id] ) ) subquery1
-        
-    //     group by temp, match_player_table.[name]
-    // `)
-
     const query = await db.getAsync(`
-    SELECT win_loss, count(temp.win_loss) AS streak_length FROM
-    (SELECT winner, game_team,
-        CASE
-            WHEN game_team = winner then true
-            ELSE false
-        END as win_loss
-        FROM match_player_table
-            INNER JOIN match_table
-            ON match_table.id = match_player_table.match_id
-            WHERE id32 = ?
-            ORDER BY match_id DESC)
-        AS temp
-    GROUP BY temp.win_loss LIMIT 1
+SELECT id32, 
+       Count(streak_group) AS streak_count, 
+       CASE 
+         WHEN win_loss = 1 THEN "win" 
+         ELSE "lose" 
+       END                 AS streak_type 
+FROM   (SELECT id32, 
+               match_player_table.match_id, 
+               winner, 
+               game_team, 
+               CASE 
+                 WHEN game_team = winner THEN true 
+                 ELSE false 
+               END 
+               AS 
+                      win_loss, 
+               ( Row_number() 
+                   OVER ( 
+                     ORDER BY match_id DESC) - Row_number() 
+                 OVER ( 
+                   partition BY CASE WHEN game_team 
+                 = winner 
+                 THEN true ELSE false END 
+                   ORDER BY match_id DESC) ) AS 
+               streak_group, 
+               Row_number() 
+                 OVER ( 
+                   ORDER BY match_id DESC) 
+               AS 
+                      one, 
+               Row_number() 
+                 OVER ( 
+                   partition BY CASE WHEN game_team = winner THEN true ELSE 
+                 false END 
+                   ORDER BY match_id DESC) 
+               AS 
+                      two 
+        FROM   match_player_table 
+               INNER JOIN match_table 
+                       ON match_table.id = match_player_table.match_id 
+        ORDER  BY match_id DESC)
+        where id32 = ? GROUP BY
+          streak_group, 
+          win_loss 
+ORDER  BY match_id DESC
     `, id32)
 
     return query
