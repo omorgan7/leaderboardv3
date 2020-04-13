@@ -7,7 +7,6 @@ exports.defaultMmr = 2000
 const baseMmr = 25
 const mmrCap = 20
 const thresholdFactor = 50
-const maximumDifference = 300
 
 const calibrationFactors = [2.0, 1.8, 1.6, 1.4, 1.2]
 const mmrChanges = {
@@ -44,9 +43,9 @@ exports.updateMmrSystem = function(players, winner) {
     // clamp to a maximum of mmrCap - so that the most mmr you can win is 45 and the the least is 5.
 
     //
-    const mmrIncrements = Math.floor(Math.max(difference, maximumDifference) / thresholdFactor);
+    const mmrIncrements = Math.floor(Math.abs(difference) / thresholdFactor)
 
-    const baseChange = Math.max(mmrCap, mmrIncrements)
+    const baseChange = Math.min(mmrCap, mmrChanges[mmrIncrements])
 
     players.forEach((player) => {
 
