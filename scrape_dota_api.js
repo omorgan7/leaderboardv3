@@ -51,7 +51,7 @@ http.get(`https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v1/?key=${secret
                 setTimeout( () => {
                     console.log("Fetching: " + url)
                     const request = http.get(url, {rejectUnauthorized: false}, fileClose.bind({name: name + appendix, url: url}))
-                    .on('error', (err) => console.log("Bad response reading " + url))
+                    .on('error', (err) => console.log("Bad response reading " + url + " " + err))
                 }, 200)
 
             }
@@ -82,7 +82,7 @@ http.get(`https://api.steampowered.com/IEconDOTA2_570/GetGameItems/v1/?key=${sec
             setTimeout(() => {
                 console.log("Fetching: " + url)
                 const request = http.get(url, {rejectUnauthorized: false}, fileClose.bind({name: item.name + "_lg.png", url: url}))
-                .on('error', (err) => console.log("Bad response reading " + url))
+                .on('error', (err) => console.log("Bad response reading " + url + " " + err))
             }, 200)
 
         }
