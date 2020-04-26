@@ -194,7 +194,7 @@ class PlayerFormatter extends Formatter {
     }
 
     mmr() {
-        return this.openDiv("player-section").div("player-mmr-header", "MMR").div("player-mmr-value", "9999").closeDiv()
+        return this.openDiv("player-section").div("player-mmr-header", "MMR").div("player-mmr-value", this.player.mmr).closeDiv()
     }
 
     winLoss() {
@@ -267,10 +267,6 @@ class Render {
 
         const player = await database.fetchPlayer(this.db, playerID)
         let matches = await database.fetchMatchesForPlayer(this.db, playerID, matchesPerPage)
-
-        let calibration = await database.playerCalibrating(this.db, playerID, 2)
-        let streak = await database.playerOnStreak(this.db, playerID, 2)
-        console.log(`calibration: ${calibration} ${playerID}`)
 
         let playerMetadata = {}
         try {

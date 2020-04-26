@@ -2,7 +2,7 @@
 
 const utilities = require('./utilities')
 
-exports.defaultMmr = 2000
+exports.startingMmr = 2000
 
 const baseMmr = 25
 const mmrCap = 20
@@ -57,7 +57,7 @@ exports.updateMmrSystem = function(players, winner) {
 
         // move a _lot_ of mmr if you are calibrating
         if (player.matchCount < calibrationFactors.length) {
-            change *= calibrationFactors[player.matchCount]
+            change *= calibrationFactors[player.matchCount - 1]
         }
         else if (player.winStreak || player.lossStreak) {
             change *= streakFactor

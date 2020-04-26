@@ -3,6 +3,7 @@
 const promisify = require('util').promisify
 const sql = require("sqlite3")
 const utilities = require("./utilities")
+const mmr = require('./mmr')
 
 sql.createDatabaseAsync = promisify(sql.Database)
 
@@ -14,7 +15,7 @@ exports.createDatabase = async function() {
     const db = exports.startDatabase()
 
     await db.runAsync("CREATE TABLE match_table(id bigint, duration float, winner int, timestamp bigint)")
-    await db.runAsync("CREATE TABLE player_table(id char, id32 bigint, name char)")
+    await db.runAsync("CREATE TABLE player_table(id char, id32 bigint, name char, mmr int)")
 
     // This table, after match_id, is sorted by key.
     await db.runAsync("CREATE TABLE match_player_table(match_id bigint, assists int, buffs char, damage int, deaths int, denies int, game_team int, gpm float, healing int, hero_name char, id32 bigint, items char, kills int, last_hits int, level int, player_name char, steam_id char, xpm float)")
@@ -52,15 +53,31 @@ exports.fetchMatch = async function(db, matchID) {
     return match
 }
 
-exports.fetchMatchesForPlayer = async function(db, id32, matchCount) {
-    const matches = await db.allAsync("SELECT * FROM match_player_table INNER JOIN match_table on match_table.id = match_player_table.match_id WHERE id32 = ? ORDER BY match_id DESC LIMIT ?", id32, matchCount)
-
-    return matches
+exports.fetchMatchCountForPlayers = async function(db, players) {
+    return await Promise.all(players.map(async (player) => ({
+            id32: player.id32,
+            matchCount: (await db.getAsync("SELECT COUNT(*) FROM match_player_table where id32 = ?", player.id32))["COUNT(*)"]
+        })
+    ))
 }
 
-exports.playerOnStreak = async function(db, id32, streakCount) {
-    const query = await db.getAsync(`
-SELECT id32, 
+exports.fetchPlayersFromMatch = async function(db, matchID) {
+    const match = await db.allAsync("SELECT player_table.mmr, player_table.id32, match_player_table.game_team FROM match_player_table INNER JOIN player_table ON match_player_table.id32 = player_table.id32 where match_player_table.match_id = ? ORDER BY player_table.id32 DESC", matchID)
+
+    return match
+}
+
+exports.fetchMatchesForPlayer = async function(db, id32, matchCount) {
+    return await db.allAsync("SELECT * FROM match_player_table INNER JOIN match_table on match_table.id = match_player_table.match_id WHERE id32 = ? ORDER BY match_id DESC LIMIT ?", id32, matchCount)
+}
+
+exports.updatePlayersMmr = async function(db, players) {
+    await Promise.all(players.map(async (player) => await db.runAsync(`UPDATE player_table SET mmr = ? WHERE id32 = ?`, player.mmr, player.id32)))
+}
+
+exports.playerOnStreak = async function(db, players, streakCount) {
+    const queries = players.map(async (player) => {
+        return await db.getAsync(`SELECT id32, 
        Count(streak_group) AS streak_count, 
        CASE 
          WHEN win_loss = 1 THEN "win" 
@@ -104,21 +121,10 @@ FROM   (SELECT id32,
         where id32 = ? GROUP BY
           streak_group, 
           win_loss 
-ORDER  BY match_id DESC
-    `, id32)
+ORDER  BY match_id DESC`, player.id32)
+    })
 
-    return query
-}
-
-exports.playerCalibrating = async function(db, id32, calibrationCount) {
-    // const matchCount = (await db.getAsync("SELECT COUNT(*) FROM match_player_table where id32 = ?", id32))["COUNT(*)"]
-    const query = await db.getAsync(`
-    SELECT
-    CASE
-        WHEN COUNT(id32) < ? THEN true ELSE false
-    END AS calibration
-    FROM match_player_table WHERE id32 = ?`, calibrationCount, id32)
-    return query.calibration 
+    return await Promise.all(queries);
 }
 
 exports.fetchPlayer = async function(db, id32) {
@@ -130,6 +136,30 @@ exports.fetchPlayer = async function(db, id32) {
     player.lossCount = player.matchCount - player.winCount
 
     return player
+}
+
+async function updatePlayersMmrAfterMatch(db, matchID, winner) {
+    const players = await exports.fetchPlayersFromMatch(db, matchID)
+    const playerStreaks = await exports.playerOnStreak(db, players, 3)
+    const matchCounts = await exports.fetchMatchCountForPlayers(db, players)
+
+    playerStreaks.sort((a, b) => a.id32 < b.id32)
+    matchCounts.sort((a, b) => a.id32 < b.id32)
+    for (let i = 0; i < playerStreaks.length; ++i) {
+        players[i].matchCount = matchCounts[i].matchCount
+
+        if (playerStreaks[i].streak_count > 3) {
+            players[i].winStreak = playerStreaks[i].streak_type == "win"
+            players[i].loseStreak = playerStreaks[i].streak_type == "lose"
+        }
+        else {
+            players[i].winStreak = false
+            players[i].loseStreak = false
+        }
+    }
+
+    mmr.updateMmrSystem(players, winner)
+    await exports.updatePlayersMmr(db, players)
 }
 
 exports.addMatch = async function(db, matchData) {
@@ -173,8 +203,12 @@ exports.addMatch = async function(db, matchData) {
     })
 
     if (newPlayers.length > 0) {
-        let valueString = "(?, ?, ?),".repeat(newPlayers.length).slice(0, -1)
-        await db.runAsync("INSERT INTO player_table(id, id32, name) VALUES" + valueString, newPlayers.map((player) => Object.values(player)).flat())
+        newPlayers = newPlayers.map((player) => {
+            player.mmr = mmr.startingMmr
+            return player
+        })
+        let valueString = "(?, ?, ?, ?),".repeat(newPlayers.length).slice(0, -1)
+        await db.runAsync(`INSERT INTO player_table(id, id32, name, mmr) VALUES` + valueString, newPlayers.map((player) => Object.values(player)).flat())
     }
 
     // sort all match keys by alphabetical order within the table
@@ -203,4 +237,7 @@ exports.addMatch = async function(db, matchData) {
     let valueString = smallValue.repeat(matchPlayers.length).slice(0, -1)
 
     await db.runAsync("INSERT INTO match_player_table(match_id, assists, buffs, damage, deaths, denies, game_team, gpm, healing, hero_name, id32, items, kills, last_hits, level, player_name, steam_id, xpm) VALUES" + valueString, matchPlayers.flat())
+
+    // mmr todo.
+    await updatePlayersMmrAfterMatch(db, matchData.match_id, utilities.teamStringToInt(matchData.game_winner))
 }
