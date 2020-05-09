@@ -11,6 +11,8 @@ const formidable = require('formidable')
 const fs = require('fs')
 const secrets = require('./secrets')
 
+const loginHash = secrets.loginHash
+
 const app = express()
 
 const loginCookieOptions = {
@@ -22,10 +24,6 @@ const loginCookieOptions = {
 app.use(cookieParser(secrets.cookieSecret))
 app.use(express.json())
 
-function sendHomePage(req, res) {
-    res.sendFile('index.html', {root: './'})
-}
-
 const db = database.startDatabase()
 const renderer = new render(db)
 
@@ -33,12 +31,61 @@ app.get('/styles.css', (req, res, next) => {
     res.sendFile('styles.css', {root: './'})
 })
 
-app.get('/', (req, res, next) => { 
+app.get('/', async (req, res, next) => { 
     if (req.signedCookies['logged-in'] == null) {
         res.cookie('logged-in', 'false', loginCookieOptions);
     }
 
-    sendHomePage(req, res);
+    const page = await renderer.buildFrontpage()
+    res.send(page)
+})
+
+app.post('/login', async (req, res, next) => {
+    const numAttemptsOptions = {
+        maxAge : 1000 * 60 * 60 * 24  
+    }
+
+    let numLoginAttempts = 0
+    if (req.cookies['login-fail'] != undefined) {
+         numLoginAttempts = parseInt(req.cookies['login-fail'])
+    }
+    if (numLoginAttempts != NaN) {
+        if (numLoginAttempts > 10) {
+            console.log("10 failed consecutive logins. 24hr block set.")
+            res.cookie('login-fail', toString(numLoginAttempts), numAttemptsOptions) // expires after 24hours
+            res.sendFile('login.html', {root: './'})
+            return
+        }
+    }
+    else {
+        numLoginAttempts = 0
+    }
+
+    const form = new formidable.IncomingForm()
+    form.parse(req, async (err, fields, files) => {
+        const result = await crypto.compare(fields.pw, loginHash)
+        if (result) {
+            res.cookie('logged-in', 'true', loginCookieOptions)
+            res.cookie('login-fail', '0', {maxAge: 0})
+            console.log("Successful login.")
+            res.redirect("/upload")
+        }
+        else {
+            // modify the page to say wrong login
+            numLoginAttempts += 1
+            console.log("Login attempt failed. Login number: " + numLoginAttempts)
+            res.cookie('login-fail', numLoginAttempts.toString(), numAttemptsOptions)
+            res.sendFile('login.html', {root: './'})
+        }
+    })
+})
+
+app.get('/login', (req, res, next) => {
+    if (req.signedCookies['logged-in'] == "true") {
+        res.redirect("/upload")
+        return
+    }
+    res.sendFile('login.html', {root: './'})
 })
 
 app.get(/\/matches\/(\d+)/, async (req, res, next) => {
@@ -58,7 +105,7 @@ app.get(/\/matches\/(\d+)/, async (req, res, next) => {
     }
 })
 
-app.get(/\/player\/(\d+)/, async (req, res, next) => {
+app.get(/\/player\/(\d+)\/?(\d)*/, async (req, res, next) => {
     const playerID = parseInt(req.params[0])
     if (playerID == NaN) {
         res.sendStatus(404)
@@ -66,7 +113,8 @@ app.get(/\/player\/(\d+)/, async (req, res, next) => {
     }
 
     try {
-        const page = await renderer.playerPage(playerID)
+        const paginate = req.params[1] ? Number.parseInt(req.params[1]) : 1
+        const page = await renderer.playerPage(playerID, paginate)
         res.send(page)
     }
     catch (err) {
@@ -97,8 +145,13 @@ app.get('/index.html', (req, res, next) => {
     res.redirect('/')
 })
 
-app.get('/upload', (req, res, next) => { 
-    res.sendFile('upload.html', {root: './'});
+app.get('/upload', (req, res, next) => {
+    if (req.signedCookies['logged-in'] == "true") {
+        res.sendFile('upload.html', {root: './'});
+        return
+    }
+    
+    res.redirect("/")
 })
 
 app.post('/create', (req, res, next) => {

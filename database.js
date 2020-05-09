@@ -14,11 +14,11 @@ const dbName = "match_database.sqllite3"
 exports.createDatabase = async function() {
     const db = exports.startDatabase()
 
-    await db.runAsync("CREATE TABLE match_table(id bigint, duration float, winner int, timestamp bigint)")
+    await db.runAsync("CREATE TABLE match_table(id bigint, duration float, winner int, timestamp bigint, radkills int, direkills int)")
     await db.runAsync("CREATE TABLE player_table(id char, id32 bigint, name char, mmr int)")
 
     // This table, after match_id, is sorted by key.
-    await db.runAsync("CREATE TABLE match_player_table(match_id bigint, assists int, buffs char, damage int, deaths int, denies int, game_team int, gpm float, healing int, hero_name char, id32 bigint, items char, kills int, last_hits int, level int, player_name char, steam_id char, xpm float)")
+    await db.runAsync("CREATE TABLE match_player_table(match_id bigint, assists int, buffs char, captain int, damage int, deaths int, denies int, game_team int, gpm float, healing int, hero_name char, id32 bigint, items char, kills int, last_hits int, level int, player_name char, steam_id char, xpm float)")
 
     return db
 }
@@ -67,12 +67,26 @@ exports.fetchPlayersFromMatch = async function(db, matchID) {
     return match
 }
 
-exports.fetchMatchesForPlayer = async function(db, id32, matchCount) {
-    return await db.allAsync("SELECT * FROM match_player_table INNER JOIN match_table on match_table.id = match_player_table.match_id WHERE id32 = ? ORDER BY match_id DESC LIMIT ?", id32, matchCount)
+exports.fetchMatchesForPlayer = async function(db, id32, matchBegin, matchEnd) {
+    return await db.allAsync(`SELECT * FROM (
+            SELECT
+                ROW_NUMBER() OVER (
+                    ORDER BY match_table.id DESC
+                ) RowNum, *
+            FROM
+                match_player_table INNER JOIN match_table on match_table.id = match_player_table.match_id WHERE id32 = ?
+        ) t
+            WHERE RowNum > ? AND RowNum <= ?
+            ORDER BY t.id DESC
+        `, id32, matchBegin, matchEnd)
 }
 
 exports.updatePlayersMmr = async function(db, players) {
-    await Promise.all(players.map(async (player) => await db.runAsync(`UPDATE player_table SET mmr = ? WHERE id32 = ?`, player.mmr, player.id32)))
+    console.log
+    await Promise.all(players.map(async (player) => {
+        console.log(`Updating mmr of player: ${player.id32} to ${player.mmr}`)
+        await db.runAsync(`UPDATE player_table SET mmr = ? WHERE id32 = ?`, player.mmr, player.id32)
+    }))
 }
 
 exports.playerOnStreak = async function(db, players, streakCount) {
@@ -127,6 +141,10 @@ ORDER  BY match_id DESC`, player.id32)
     return await Promise.all(queries);
 }
 
+exports.fetchPlayersByMmr = async function(db) {
+    return await db.allAsync("SELECT * FROM player_table ORDER BY mmr DESC LIMIT 50")
+}
+
 exports.fetchPlayer = async function(db, id32) {
     const player = await db.getAsync("SELECT * from player_table WHERE id32 = ?", id32)
     
@@ -169,7 +187,7 @@ exports.addMatch = async function(db, matchData) {
         return
     }
 
-    await db.runAsync("INSERT INTO match_table(id, duration, winner, timestamp) VALUES(?, ?, ?, ?)", [
+    await db.runAsync("INSERT INTO match_table(id, duration, winner, timestamp, radkills, direkills) VALUES(?, ?, ?, ?, ?, ?)", [
         matchData.match_id,
         matchData.game_time,
         utilities.teamStringToInt(matchData.game_winner),
@@ -226,6 +244,10 @@ exports.addMatch = async function(db, matchData) {
                                  .flat()
                                  .reduce(strReduce)
         }
+
+        if (player.captain == undefined) {
+            player.captain = null
+        }
         
         const values = Object.keys(player).sort().map((key) => player[key])
         return [matchData.match_id, ...values]
@@ -236,7 +258,7 @@ exports.addMatch = async function(db, matchData) {
     let smallValue = "(" + "?, ".repeat(matchPlayers[0].length).slice(0, -2) + "),"
     let valueString = smallValue.repeat(matchPlayers.length).slice(0, -1)
 
-    await db.runAsync("INSERT INTO match_player_table(match_id, assists, buffs, damage, deaths, denies, game_team, gpm, healing, hero_name, id32, items, kills, last_hits, level, player_name, steam_id, xpm) VALUES" + valueString, matchPlayers.flat())
+    await db.runAsync("INSERT INTO match_player_table(match_id, assists, buffs, captain, damage, deaths, denies, game_team, gpm, healing, hero_name, id32, items, kills, last_hits, level, player_name, steam_id, xpm) VALUES" + valueString, matchPlayers.flat())
 
     // mmr todo.
     await updatePlayersMmrAfterMatch(db, matchData.match_id, utilities.teamStringToInt(matchData.game_winner))

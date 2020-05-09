@@ -21,7 +21,6 @@ exports.parseReplay = function(fileName, callback) {
     var file = fileName
     const javaParser = spawn.exec("java -jar mjollnir/target/mjollnir.one-jar.jar " + fileName, (err, stdout, stderr) => {
 
-        fs.unlink(file, (_) => {})
         if (err && err.code != 0) {
             callback(err)
             return

@@ -59,3 +59,10 @@ exports.equals = function(x, y) {
     }
     return true;
   }
+
+  exports.secondsToMinuteSeconds = function(duration) {
+      const minutes = Math.round(duration / 60)
+      const seconds = Math.round(duration % 60)
+
+      return ({minutes: minutes, seconds: seconds})
+  }

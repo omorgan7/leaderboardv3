@@ -1,0 +1,28 @@
+<html>
+    <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css?family=Open+Sans">
+    <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css?family=Cinzel">
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <body>
+        <h1>LOG IN</h1>
+        <h2 id='login-fail'></h2>
+        <script>
+                let cookie = document.cookie;
+                if (cookie != "") {
+                    let cookieString = cookie.slice(0, 10);
+                    let loginAttempts = parseInt(cookie.slice(11));
+                    if (cookieString == 'login-fail' && loginAttempts != NaN && loginAttempts > 0) {
+                        let loginFail = document.getElementById('login-fail');
+                        loginFail.innerHTML = "Incorrect password.";
+                    }
+                }
+        </script>   
+        <div class='login'>
+            <form method='POST' action='/login'>
+                <input type='password' name='pw'>
+                <input type='submit' value='Login'>
+            </form>
+        </div>
+    </body>
+</html>

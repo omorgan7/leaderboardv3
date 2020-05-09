@@ -8,3 +8,5 @@ exports.steamKey = secret.steam_api_key
 
 exports.cookieSecret = secret.cookie_secret
 
+exports.loginHash = secret.login_hash
+

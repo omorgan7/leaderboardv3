@@ -48,7 +48,6 @@ exports.updateMmrSystem = function(players, winner) {
     const baseChange = Math.min(mmrCap, mmrChanges[mmrIncrements])
 
     players.forEach((player) => {
-
         // flip the sign if the game was imbalanced in favour of one team
         let change = baseMmr + (player.game_team == utilities.RADIANT ? baseChange : -baseChange)
 
@@ -63,6 +62,12 @@ exports.updateMmrSystem = function(players, winner) {
             change *= streakFactor
         }
 
-        player.mmr += change
+        // don't accumulate mmr if the player would go negative.
+        if (change < 0 && (player.mmr + change) < 1) {
+        }
+        else {
+            player.mmr += change
+        }
+        console.log(`Updating ${player.id32} with MMR: ${change}`)
     })
 }

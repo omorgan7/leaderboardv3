@@ -25,7 +25,7 @@ class Formatter {
     }
 
     div(className, str) {
-        this.page = this.page + "<div class='" + className + "'>" + str + "</div>\n"
+        this.page = this.page + `<div class='${className}'>${str}</div>\n`
         return this
     }
 
@@ -53,20 +53,21 @@ class Formatter {
     }
 
     hero(hero) {
-        const heroStr = hero.replace("npc_dota_hero_", "<img class='match-hero-img' src='/dota_assets/") + "_vert.jpg'>"
+        const heroStr = hero.replace("npc_dota_hero_", "<img src='/dota_assets/") + "_vert.jpg'></img>"
 
-        return this.tableCell(heroStr, "cell cell-hero-img")
+        return this.tableCell(heroStr, "cell match-hero-img")
     }
 
     items(itemsStr) {
         const items = itemsStr.split(",").map((item) => "/dota_assets/" + item + "_lg.png")
 
-        let extraClass = items.length > 6 ? "cell cell-item cell-item-adjust" : "cell cell-item"
+        let extraClass = items.length > 6 ? "cell cell-item-adjust" : "cell cell-item-img"
+
         return this.tableCell(
             items.slice(0, 6)
-            .reduce((prev, next) => prev + "<img class='cell-item-img' src='" + next + "'>", "")
-            + items.slice(6)
-            .reduce((prev, next) => prev + "<img class='cell-bp-img' src='" + next + "'>", ""), extraClass)
+            .reduce((prev, next) => prev + `<img src='${next}'></img>`, ""), extraClass)
+            + this.tableCell(items.slice(6)
+            .reduce((prev, next) => prev + `<img src='${next}'></img>`, ""), extraClass)
     }
 
     buffs(buffsStr) {
@@ -94,9 +95,40 @@ class Formatter {
         }
 
         return this.tableCell(
-            buffCell.reduce((prev, next) => prev + next), "cell cell-buff cell-item cell-item-adjust")
+            buffCell.reduce((prev, next) => prev + next), "cell cell-buff")
     }
 
+}
+
+class FrontPageFormatter extends Formatter {
+    constructor(page, match) {
+        super(page)
+    }
+
+    playerTable(players) {
+        this.openTableRow("table-row-big-header")
+        this.tableCell("Rank", "cell cell-big")
+        this.tableCell("", "cell  cell-big cell-player-profile-pic")
+        this.tableCell("Name",  "cell cell-big cell-big-player-name")
+        this.tableCell("MMR", "cell cell-big")
+        this.closeTableRow()
+        for (let i = 0; i < players.length; i++) {
+            let player = players[i]
+            this.openTableRow("table-row-big")
+            let name = player.metadata.personaname
+            if (name.length > 18) {
+                name = name.slice(0, 17) + "..."
+            }
+
+            this.tableCell(`#${i + 1}`, "cell cell-big")
+            this.tableCell(`<img src=${player.metadata.avatarfull}</img>`, "cell  cell-big cell-player-profile-pic")
+            
+            this.tableCell(`<a href=/player/${player.id32}> ${name}</a>`, "cell cell-big cell-big-player-name")
+            this.tableCell(player.mmr.toFixed(0), "cell cell-big")
+            this.closeTableRow()
+        }
+        
+    }
 }
 
 class MatchFormatter extends Formatter {
@@ -109,10 +141,6 @@ class MatchFormatter extends Formatter {
     winner() {
         const winner = this.match.winner == utilities.RADIANT ? "Radiant Victory" : "Dire Victory"
         return this.div("winner " + winner, winner)
-    }
-
-    matchHeader() {
-        return this.div("match-header", `Match #${this.match.id}`)
     }
 
     radiantHeader() {
@@ -128,11 +156,11 @@ class MatchFormatter extends Formatter {
             this.openTableRow()
             this.hero(player.hero_name)
             let name = player.player_name
-            if (name.length > 20) {
-                name = name.slice(0, 15) + "..."
+            if (name.length > 18) {
+                name = name.slice(0, 17) + "..."
             }
             this.tableCell(`<a href=/player/${player.id32}> ${name}</a>`, "cell cell-player")
-            this.tableCell(`${player.kills}`)
+            this.tableCell(`${player.kills}`,)
             this.tableCell(`${player.deaths}`)
             this.tableCell(`${player.assists}`)
             this.tableCell(`${player.last_hits}`)
@@ -173,9 +201,14 @@ class MatchFormatter extends Formatter {
         .tableCell("Items", "cell cell-item").closeTableRow()
     }
 
-    date() {
+    matchHeader() {
         const date = new Date(this.match.timestamp * 1000)
-        return this.div("date", date)
+        return this.div("match-header", `#${this.match.id} – ${date.getUTCHours().toString().padStart(2, "0")}:${date.getUTCMinutes().toString().padStart(2, "0")} ${date.getUTCDate().toString().padStart(2, "0")}/${(date.getUTCMonth() + 1).toString().padStart(2, "0")}/${date.getUTCFullYear()}`)
+    }
+
+    duration() {
+        const timestamp = utilities.secondsToMinuteSeconds(this.match.duration)
+        return this.div("date", `Duration: ${timestamp.minutes}:${timestamp.seconds}`)
     }
 }
 
@@ -190,11 +223,11 @@ class PlayerFormatter extends Formatter {
     }
 
     profilePicture() {
-        return this.div("player-pic", `<img class=player-pic-img src='${this.player.metadata.avatarfull}'></img>`)
+        return this.div("player-pic", `<img src='${this.player.metadata.avatarfull}'></img>`)
     }
 
     mmr() {
-        return this.openDiv("player-section").div("player-mmr-header", "MMR").div("player-mmr-value", this.player.mmr).closeDiv()
+        return this.openDiv("player-section").div("player-mmr-header", "MMR").div("player-mmr-value", this.player.mmr.toFixed(0)).closeDiv()
     }
 
     winLoss() {
@@ -210,10 +243,10 @@ class PlayerFormatter extends Formatter {
         return this
         .openTableRow()
         .tableCell("Hero", "cell cell-hero-title")
-        .tableCell("Date")
-        .tableCell("Team")
-        .tableCell("Victory")
-        .tableCell("Match ID")
+        .tableCell("Date", "cell cell-player-date-header")
+        .tableCell("Team", "cell cell-long")
+        .tableCell("Victory", "cell cell-long")
+        .tableCell("Match ID", "cell cell-player-match-id")
         .tableCell("K")
         .tableCell("D")
         .tableCell("A")
@@ -232,14 +265,14 @@ class PlayerFormatter extends Formatter {
             this.hero(match.hero_name)
 
             const date = new Date(match.timestamp * 1000)
-            this.tableCell(`${date.getUTCFullYear()}/` + `${date.getMonth() + 1}`.padStart(2, "0") + '/' + `${date.getUTCDay() - 1}`.padStart(2, "0"))
+            this.tableCell(`${date.getUTCHours().toString().padStart(2, "0")}:${date.getUTCMinutes().toString().padStart(2, "0")} ${date.getUTCDate().toString().padStart(2, "0")}/${(date.getUTCMonth() + 1).toString().padStart(2, "0")}/${date.getUTCFullYear()}`.padStart(2, "0"), "cell cell-player-date")
 
             let team = utilities.teamIntToString(match.game_team)
             team = team.charAt(0).toLocaleUpperCase() + team.substr(1)
-            this.tableCell(team)
+            this.tableCell(team, "cell cell-long")
 
-            this.tableCell(winner ? "Victory" : "Defeat")
-            this.tableCell(`<a href=/matches/${match.match_id}> #${match.match_id}</a>`)
+            this.tableCell(winner ? "Victory" : "Defeat", "cell cell-long")
+            this.tableCell(`<a href=/matches/${match.match_id}> #${match.match_id}</a>`, "cell cell-player-match-id")
             this.tableCell(`${match.kills}`)
             this.tableCell(`${match.deaths}`)
             this.tableCell(`${match.assists}`)
@@ -258,15 +291,46 @@ class Render {
     constructor(db) {
         this.db = db
         this.templateString = require('fs').readFileSync("template.html", "utf8")
+        this.homePage = require('fs').readFileSync("index.html", "utf8")
     }
 
-    async buildPlayer(playerID) {
+    async buildFrontpage() {
+        const formatter = new FrontPageFormatter(String(this.homePage))
+
+        const players = await Promise.all((await database.fetchPlayersByMmr(this.db)).map(async (player) => {
+            let playerMetadata = {}
+            try {
+                playerMetadata = await steam.fetchLatestPlayerInformation(player.id)
+            }
+            catch (_) {
+                playerMetadata.avatarfull = "/unknown_profile.jpg"
+                playerMetadata.personaname = player.name
+                playerMetadata.profileurl = `https://steamcommunity.com/id/${player.steam_id}`
+            }
+            player.metadata = playerMetadata
+
+            return player
+        }))
+
+        formatter.openDiv("table-big")
+
+        formatter.playerTable(players)
+
+        formatter.closeDiv()
+        return this.closeTemplate(formatter.page)
+    }
+
+    async buildPlayer(playerID, page) {
         const fileName = `cached/${playerID}.html`
 
-        const matchesPerPage = 20
+        const matchesPerPage = 10
+
+        // page is going to be 1-indexed
+        const startPage = (page - 1) * matchesPerPage
+        const endPage = page * matchesPerPage
 
         const player = await database.fetchPlayer(this.db, playerID)
-        let matches = await database.fetchMatchesForPlayer(this.db, playerID, matchesPerPage)
+        let matches = await database.fetchMatchesForPlayer(this.db, playerID, startPage, endPage)
 
         let playerMetadata = {}
         try {
@@ -293,6 +357,13 @@ class Render {
         formatter.playerMatchTableHeader().matches(matches)
         formatter.closeDiv()
 
+        formatter.openDiv("paginate")
+        
+        if (page != 1) {
+            formatter.page += `<a href="/player/${player.id32}/${page - 1}">Previous Page | </a>`
+        }
+        formatter.page += `<a href="/player/${player.id32}/${page + 1}">Next Page </a>`
+        formatter.closeDiv()
         return this.closeTemplate(formatter.page)
     }
 
@@ -303,8 +374,8 @@ class Render {
 
         const formatter = new MatchFormatter(String(this.templateString), match)
         formatter.matchHeader()
-        formatter.date()
         formatter.winner()
+        formatter.duration()
 
         formatter.radiantHeader()
         formatter.openDiv("table")
@@ -338,12 +409,12 @@ class Render {
         return this.buildMatch(matchID)
     }
 
-    async playerPage(playerID) {
+    async playerPage(playerID, page) {
         if (!await database.isValidPlayer(this.db, playerID)) {
             throw Error(`Attempted to access ${playerID}, but was not found in database.`)
         }
 
-        return this.buildPlayer(playerID)
+        return this.buildPlayer(playerID, page)
     }
     
     closeTemplate(page) {

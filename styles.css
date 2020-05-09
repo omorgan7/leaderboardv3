@@ -13,6 +13,9 @@ label, .player-name {
 .player-name {
     font-size: 1.6em;
     text-align: left;
+    margin-right: 5%;
+    float: left;
+    min-width: 8em;
 }
 
 h2 {
@@ -22,11 +25,11 @@ h2 {
 }
 
 h3, .table, .player-header {
-    margin-left: 7vw;
+    margin-left: 10%;
 }
 
 .radiant.header, .dire.header {
-    margin-left: 8.4vw;
+    margin-left: 11.4%;
     text-align: left;
 }
 
@@ -59,11 +62,11 @@ a:link {
 }
 
 #radiant-filter::before {
-    filter: hue-rotate(300deg)
+    filter: hue-rotate(280deg)
 }
 
 #dire-filter::before {
-    filter: hue-rotate(100deg)
+    filter: hue-rotate(140deg)
 }
 
 body::before {
@@ -105,20 +108,23 @@ input[type='password'] {
 input[type='submit'] {
     width: 25%;
 }
-h1, .match-header {
+h1 {
     margin-bottom: 0px;
     font-size: 6vw;
     font-weight: normal;
     text-align: center;
 }
+.match-header  {
+    margin-top: -1.5em;
+    font-size: 1.2em;
+}
 .date {
-    margin-top: -1em;
-    font-size: 0.8em;
+    font-size: 2.0em;
+    margin-bottom: -0.1em;
 }
 .winner {
-    margin-top: 0.1em;
-    margin-bottom: 0.1em;
-    font-size: 3em;
+    font-size: 6em;
+    margin-bottom: -0.2em;
 }
 
 tr {
@@ -132,29 +138,61 @@ td, .cell {
     font-size: 10pt;
 }
 
-.match-hero-img {
-    max-height: 100%;
+.cell.match-hero-img {
+    height: 100%;
     position: relative;
     width: auto;
+    top: 0%;
+    margin-right: 5px;
+    margin-left: 5px;
 }
 
 .cell.cell-hero-title, .cell.cell-hero-img {
     margin-left: 5px;
+    margin-right: 10px;
+}
+.cell.cell-player-date-header, .cell.cell.cell-player-date {
+    width: 6em;
+}
+.cell.cell.cell-player-date {
+    top: 12.5%;
+}
+
+img {
+    height: 100%;
 }
 
 .cell.cell-hero-img {
-    position: relative;
+    overflow: hidden;
     top: 0%;
 }
 
-@media screen and (max-width: 640px) {
+.cell.cell-player-profile-pic {
+    top: 0%;
+    margin-left: 5px;
+    margin-right: 3em;
+}
+
+@media screen and (max-width: 640pt) {
+    .match-header  {
+        margin-top: -3em;
+        font-size: 0.8em;
+    }
+    .date {
+        font-size: 0.8em;
+        margin-bottom: 1em;
+    }
+    .winner {
+        font-size: 2em;
+        margin-bottom: -0.2em;
+    }
     .cell {
-        min-width: 8%;
+        width: 2em;
     }
     .cell.cell-player {
-        max-width: 20%;
+        max-width: 20em;
     }
-    .cell.cell-item {
+    .cell.cell-item-img, .cell.cell-item, .cell.cell-item-adjust {
         display: none;
     }
     .cell.cell-extra {
@@ -165,13 +203,18 @@ td, .cell {
     }
 }
 .cell.cell-player {
-    width: 18%;
+    width: 11em;
     margin-right: 10px;
 }
 
-.cell-item-img {
+.cell.cell-item-adjust {
+    top: 0%;
+}
+.cell.cell-item-img, .cell.cell-item-adjust {
+    min-width: 17em;
     max-height: 50%;
     float: left;
+    overflow: hidden;
 }
 .cell-buff-img {
     height: 100%;
@@ -198,21 +241,48 @@ td, .cell {
     top: 0%;
 }
 
-.cell-bp-img {
-    max-height: 50%;
-    float: left;
-    clear: left;
-    filter: brightness(0.4);
+img {
+    position: relative;
+}
+
+.cell.cell-big-player-name {
+    width: 18em;
+}
+.cell.cell-big {
+    min-width: 1em;
+    font-family: 'Cinzel', serif;
+    font-size: 0.7em;
+    margin-left: 5px;
+}
+
+.paginate {
+    margin: auto;
+    width: fit-content;
+    background-color: rgba(27, 29, 59, 0.4);
+    font-family: 'Open Sans', sans-serif;
+}
+
+.table-row.table-row-big {
+    height: 3em;
+}
+
+.table-big {
+    font-size: 2em;
+    margin: 0 auto;
+    text-align: left;
+    width: 25em;
+    border-spacing: 20 10; 
 }
 
 .table, .player-header {
     text-align: left;
-    width: 80vw;
+    width: 80%;
     border-spacing: 10 5; 
 }
 
-.table {
+.table, .table-big {
     display: table;
+    margin-bottom: 0.8em;
 }
 
 .player-wl-header, .player-mmr-header, .player-win-pc-header {
@@ -220,14 +290,10 @@ td, .cell {
     font-size: 1.2em;
 }
 
-.player-name {
-    margin-right: 10%;
-}
-
 .player-section {
     float: left;
     clear: left;
-    margin-left: 10%;
+    margin-right: 10%;
 }
 
 .player-wl-value, .player-mmr-value, .player-win-pc-value {
@@ -244,17 +310,9 @@ td, .cell {
     height: 120px;
 }
 
-.player-name, .player-pic {
-    float: left;
-    overflow: auto;
-    position: relative;
-}
-
 .player-pic {
     margin: 20px;
-}
-
-.player-pic-img {
+    overflow: visible;
     height: 80px;
 }
 
@@ -262,10 +320,13 @@ td, .cell {
     background-color: rgba(27, 29, 59, 0.4)
 }
 
-@media screen and (max-width: 850px) {
+@media screen and (max-width: 900pt) {
     .table, .player-header {
         width: 100%;
         margin-left: 0;
+    }
+    .cell {
+        width: 2em;
     }
     h3 {
         margin-left: 0;
@@ -279,38 +340,49 @@ td, .cell {
 .table-row {
     /* display: table-row; */
     margin: 5px;
-    height: 40px;
+    height: 50px;
     background-color: rgba(0, 0, 0, 0.4);
+}
+
+.input-type-file {
+    color: whitesmoke;
 }
 
 .cell {
     display: table-cell;
     float: left;
-    overflow: auto;
+    /* overflow: auto; */
     position: relative;
     top: 25%;
-    width: 4.7%;
+    width: 2.5em;
     height: 100%;
     margin-right: 3px;
 }
+.cell.cell-player-match-id {
+    width: 9em;
+}
+.cell.cell-long, .cell.cell-extra {
+    width: 5.5em;
+}
 
 .cell.cell-item {
-    width: 20%;
+    width: 14em;
     /* min-width: 10%; */
     /* max-width: 25%; */
     height: 100%;
     clear: right;
 }
-
 .cell.cell-buff {
-    width: 7%;
-    margin-right: 2%;
     height: 100%;
+}
+.cell.cell-buff{
+    width: 7em;
+    max-height: 100%;
+    /* float: left; */
 }
 
 .cell-buff-modifier {
-    /* clear: left; */
-    height: 50%;
+    max-height: 50%;
     float: left;
 }
 
