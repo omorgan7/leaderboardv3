@@ -217,7 +217,7 @@ img {
     overflow: hidden;
 }
 .cell-buff-img {
-    height: 100%;
+    /* height: 100%; */
     z-index: 0;
     /* position: absolute; */
     /* float: left; */
@@ -382,7 +382,7 @@ img {
 }
 
 .cell-buff-modifier {
-    max-height: 50%;
+    height: 50%;
     float: left;
 }
 
