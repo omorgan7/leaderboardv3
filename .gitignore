@@ -7,3 +7,4 @@ match_database.sqllite3
 .DS_Store
 secrets.json
 replays_backup/*
+log.txt
