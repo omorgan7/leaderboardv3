@@ -2,6 +2,7 @@
 
 const spawn = require("child_process")
 const fs = require("fs")
+const path = require("path")
 
 function fileFromStdOut(stdout) {
     // the file name should be the first line in stdout.
@@ -20,7 +21,7 @@ function fileFromStdOut(stdout) {
 exports.parseReplay = function(fileName, callback) {
     var file = fileName
     const javaParser = spawn.exec("java -jar mjollnir/target/mjollnir.one-jar.jar " + fileName, (err, stdout, stderr) => {
-
+        
         if (err && err.code != 0) {
             callback(err)
             return
@@ -32,6 +33,8 @@ exports.parseReplay = function(fileName, callback) {
             callback("Replay parse failed.", null)
             return
         }
+
+        fs.rename(file, "replays_backup/" + path.basename(tempName), () => {})
         
         const fileName = "replays/" + tempName
 
