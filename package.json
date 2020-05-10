@@ -27,9 +27,9 @@
   "homepage": "https://github.com/omorgan7/leaderboardv3#readme",
   "dependencies": {
     "bcryptjs": "^2.4.3",
-    "cookie-parser": "^1.4.4",
+    "cookie-parser": "^1.4.5",
     "express": "^4.17.1",
-    "formidable": "^1.2.1",
-    "sqlite3": "^4.1.1"
+    "formidable": "^1.2.2",
+    "sqlite3": "^4.2.0"
   }
 }
