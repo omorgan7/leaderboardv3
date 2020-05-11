@@ -116,11 +116,8 @@ class FrontPageFormatter extends Formatter {
             let player = players[i]
             this.openTableRow("table-row-big")
             let name = player.metadata.personaname
-            if (name.length > 18) {
-                name = name.slice(0, 17) + "..."
-            }
 
-            this.tableCell(`#${i + 1}`, "cell cell-big")
+            this.tableCell(`#${i + 1}`, "cell cell-big cell-player-rank")
             this.tableCell(`<img src=${player.metadata.avatarfull}</img>`, "cell  cell-big cell-player-profile-pic")
             
             this.tableCell(`<a href=/player/${player.id32}> ${name}</a>`, "cell cell-big cell-big-player-name")
