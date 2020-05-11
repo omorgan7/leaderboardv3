@@ -245,9 +245,18 @@ img {
     position: relative;
 }
 
-.cell.cell-big-player-name {
-    width: 18em;
+.cell-player-rank {
+    text-align: center;
 }
+
+.cell.cell-big-player-name {
+    flex-grow: 1;
+}
+
+.cell.cell-big-player-name a {
+    word-wrap: anywhere;
+}
+
 .cell.cell-big {
     min-width: 1em;
     font-family: 'Cinzel', serif;
@@ -270,7 +279,8 @@ img {
     font-size: 2em;
     margin: 0 auto;
     text-align: left;
-    width: 25em;
+    width: 90%;
+    max-width: 25em;
     border-spacing: 20 10; 
 }
 
@@ -338,7 +348,7 @@ img {
 }
 
 .table-row {
-    /* display: table-row; */
+    display: flex;
     margin: 5px;
     height: 50px;
     background-color: rgba(0, 0, 0, 0.4);
