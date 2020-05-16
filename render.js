@@ -137,14 +137,17 @@ class MatchesPageFormatter extends Formatter {
     matchesTable() {
         this.openTableRow("table-row-big-header")
         this.tableCell("Match ID", "cell cell-player-match-id")
-        this.tableCell("Date", "cell")
+        this.tableCell("Date", "cell cell-player-date-header")
+        this.tableCell("Length", "cell")
         this.closeTableRow()
 
         for (const match of this.matches) {
             const date = new Date(match.timestamp * 1000)
+            const { hours, minutes, seconds } = utilities.calculateMatchLength(match.duration)
             this.openTableRow("table-row")
-            this.tableCell(match.id, "cell cell-player-match-id")
+            this.tableCell(`<a href="/matches/${match.id}">#${match.id}</a>`, "cell cell-player-match-id")
             this.tableCell(`${date.getUTCHours().toString().padStart(2, "0")}:${date.getUTCMinutes().toString().padStart(2, "0")} ${date.getUTCDate().toString().padStart(2, "0")}/${(date.getUTCMonth() + 1).toString().padStart(2, "0")}/${date.getUTCFullYear()}`, "cell cell-player-date")
+            this.tableCell(`${hours > 0 ? `${hours}:`: ""}${minutes}:${seconds}`, "cell cell-")
             this.closeTableRow()
         }
     }
@@ -226,8 +229,8 @@ class MatchFormatter extends Formatter {
     }
 
     duration() {
-        const timestamp = utilities.secondsToMinuteSeconds(this.match.duration)
-        return this.div("date", `Duration: ${timestamp.minutes}:${timestamp.seconds}`)
+        const timestamp = utilities.calculateMatchLength(this.match.duration)
+        return this.div("date", `Duration: ${timestamp.hours > 0 ? `${timestamp.hours}:` : ""}${timestamp.minutes}:${timestamp.seconds}`)
     }
 }
 
