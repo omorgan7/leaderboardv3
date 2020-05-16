@@ -128,6 +128,27 @@ class FrontPageFormatter extends Formatter {
     }
 }
 
+class MatchesPageFormatter extends Formatter {
+    constructor(page, matches) {
+        super(page)
+        this.matches = matches
+    }
+
+    matchesTable() {
+        this.openTableRow("table-row-big-header")
+        this.tableCell("Match ID", "cell cell-player-match-id")
+        this.tableCell("Date", "cell")
+        this.closeTableRow()
+
+        // for (const match of this.matches) {
+            const date = new Date(this.matches.timestamp * 1000)
+            this.openTableRow("table-row")
+            this.tableCell(this.matches.id, "cell cell-player-match-id")
+            this.tableCell(`${date.getUTCHours().toString().padStart(2, "0")}:${date.getUTCMinutes().toString().padStart(2, "0")} ${date.getUTCDate().toString().padStart(2, "0")}/${(date.getUTCMonth() + 1).toString().padStart(2, "0")}/${date.getUTCFullYear()}`, "cell cell-player-date")
+        // }
+    }
+}
+
 class MatchFormatter extends Formatter {
 
     constructor(page, match) {
@@ -289,6 +310,7 @@ class Render {
         this.db = db
         this.templateString = require('fs').readFileSync("template.html", "utf8")
         this.homePage = require('fs').readFileSync("index.html", "utf8")
+        this.matchesPage = require('fs').readFileSync("matches.html", "utf8")
     }
 
     async buildFrontpage() {
@@ -314,6 +336,19 @@ class Render {
         formatter.playerTable(players)
 
         formatter.closeDiv()
+        return this.closeTemplate(formatter.page)
+    }
+
+    async buildMatchespage() {
+        const matches = await database.fetchMatches(this.db)
+        const formatter = new MatchesPageFormatter(String(this.matchesPage), matches)
+
+        formatter.openDiv("table")
+
+        formatter.matchesTable(matches)
+
+        formatter.closeDiv()
+
         return this.closeTemplate(formatter.page)
     }
 

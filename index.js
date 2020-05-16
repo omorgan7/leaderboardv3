@@ -40,6 +40,11 @@ app.get('/', async (req, res, next) => {
     res.send(page)
 })
 
+app.get('/matches', async (req, res, next) => {
+    const page = await renderer.buildMatchespage()
+    res.send(page)
+})
+
 app.post('/login', async (req, res, next) => {
     const numAttemptsOptions = {
         maxAge : 1000 * 60 * 60 * 24  

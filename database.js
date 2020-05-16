@@ -46,6 +46,12 @@ exports.validPlayers = async function(db, ids) {
     return await db.allAsync("SELECT * FROM player_table where id32 IN " + queryString, ids.flat())
 }
 
+exports.fetchMatches = async function(db) {
+    const matches = await db.getAsync("SELECT * FROM match_table")
+
+    return matches
+}
+
 exports.fetchMatch = async function(db, matchID) {
     const match = await db.getAsync("SELECT * FROM match_table WHERE id = ?", matchID)
     match.player = await db.allAsync("SELECT * FROM match_player_table WHERE match_id = ?", matchID)
