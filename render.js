@@ -151,6 +151,7 @@ class MatchesPageFormatter extends Formatter {
             this.tableCell(`${date.getUTCHours().toString().padStart(2, "0")}:${date.getUTCMinutes().toString().padStart(2, "0")} ${date.getUTCDate().toString().padStart(2, "0")}/${(date.getUTCMonth() + 1).toString().padStart(2, "0")}/${date.getUTCFullYear()}`, "cell cell-player-date")
             this.tableCell(`${hours > 0 ? `${hours}:`: ""}${minutes}:${seconds}`, "cell cell-match-length")
             match.rad_heroes.forEach(hero => this.hero(hero))
+            this.tableCell("", "cell cell-spacing")
             match.dire_heroes.forEach(hero => this.hero(hero))
             this.closeTableRow()
         }

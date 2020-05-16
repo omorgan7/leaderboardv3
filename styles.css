@@ -194,7 +194,11 @@ td, .cell {
 }
 
 .cell.cell-team-heroes-header {
-    width: 20em;
+    width: 22em;
+}
+
+.cell.cell-spacing {
+    width: 2em;
 }
 
 img {
