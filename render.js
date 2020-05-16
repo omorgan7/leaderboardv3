@@ -140,12 +140,13 @@ class MatchesPageFormatter extends Formatter {
         this.tableCell("Date", "cell")
         this.closeTableRow()
 
-        // for (const match of this.matches) {
-            const date = new Date(this.matches.timestamp * 1000)
+        for (const match of this.matches) {
+            const date = new Date(match.timestamp * 1000)
             this.openTableRow("table-row")
-            this.tableCell(this.matches.id, "cell cell-player-match-id")
+            this.tableCell(match.id, "cell cell-player-match-id")
             this.tableCell(`${date.getUTCHours().toString().padStart(2, "0")}:${date.getUTCMinutes().toString().padStart(2, "0")} ${date.getUTCDate().toString().padStart(2, "0")}/${(date.getUTCMonth() + 1).toString().padStart(2, "0")}/${date.getUTCFullYear()}`, "cell cell-player-date")
-        // }
+            this.closeTableRow()
+        }
     }
 }
 
