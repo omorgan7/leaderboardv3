@@ -144,15 +144,16 @@ class MatchesPageFormatter extends Formatter {
         this.closeTableRow()
 
         for (const match of this.matches) {
-            const date = new Date(match.timestamp * 1000)
-            const { hours, minutes, seconds } = utilities.calculateMatchLength(match.duration)
-            this.openTableRow("table-row")
-            this.tableCell(`<a href="/matches/${match.id}">#${match.id}</a>`, "cell cell-player-match-id")
+            const { id, duration, winner, timestamp, rad_heroes, dire_heroes } = match
+            const date = new Date(timestamp * 1000)
+            const { hours, minutes, seconds } = utilities.calculateMatchLength(duration)
+            this.openTableRow(`table-row ${winner === 2 ? "radiant" : "dire"}`)
+            this.tableCell(`<a href="/matches/${id}">#${id}</a>`, "cell cell-player-match-id")
             this.tableCell(`${date.getUTCHours().toString().padStart(2, "0")}:${date.getUTCMinutes().toString().padStart(2, "0")} ${date.getUTCDate().toString().padStart(2, "0")}/${(date.getUTCMonth() + 1).toString().padStart(2, "0")}/${date.getUTCFullYear()}`, "cell cell-player-date")
             this.tableCell(`${hours > 0 ? `${hours}:`: ""}${minutes}:${seconds}`, "cell cell-match-length")
-            match.rad_heroes.forEach(hero => this.hero(hero))
+            rad_heroes.forEach(hero => this.hero(hero))
             this.tableCell("", "cell cell-spacing")
-            match.dire_heroes.forEach(hero => this.hero(hero))
+            dire_heroes.forEach(hero => this.hero(hero))
             this.closeTableRow()
         }
     }
