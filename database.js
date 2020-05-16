@@ -47,7 +47,7 @@ exports.validPlayers = async function(db, ids) {
 }
 
 exports.fetchMatches = async function(db) {
-    const matches = await db.allAsync("SELECT * FROM match_table")
+    const matches = await db.allAsync("SELECT * FROM match_table ORDER BY id DESC")
 
     return matches
 }
