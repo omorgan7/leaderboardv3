@@ -69,7 +69,7 @@ exports.calculateMatchLength = function(duration) {
     const seconds = String(remainingSeconds - minutes * 60).padStart(2, "0")
 
     return {
-        hours: padTime(hours),
+        hours,
         minutes: padTime(minutes),
         seconds: padTime(seconds)
     }

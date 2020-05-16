@@ -138,7 +138,9 @@ class MatchesPageFormatter extends Formatter {
         this.openTableRow("table-row-big-header")
         this.tableCell("Match ID", "cell cell-player-match-id")
         this.tableCell("Date", "cell cell-player-date-header")
-        this.tableCell("Length", "cell")
+        this.tableCell("Length", "cell cell-match-length")
+        this.tableCell("Radiant", "cell cell-team-heroes-header")
+        this.tableCell("Dire", "cell cell-team-heroes-header")
         this.closeTableRow()
 
         for (const match of this.matches) {
@@ -147,7 +149,9 @@ class MatchesPageFormatter extends Formatter {
             this.openTableRow("table-row")
             this.tableCell(`<a href="/matches/${match.id}">#${match.id}</a>`, "cell cell-player-match-id")
             this.tableCell(`${date.getUTCHours().toString().padStart(2, "0")}:${date.getUTCMinutes().toString().padStart(2, "0")} ${date.getUTCDate().toString().padStart(2, "0")}/${(date.getUTCMonth() + 1).toString().padStart(2, "0")}/${date.getUTCFullYear()}`, "cell cell-player-date")
-            this.tableCell(`${hours > 0 ? `${hours}:`: ""}${minutes}:${seconds}`, "cell cell-")
+            this.tableCell(`${hours > 0 ? `${hours}:`: ""}${minutes}:${seconds}`, "cell cell-match-length")
+            match.rad_heroes.forEach(hero => this.hero(hero))
+            match.dire_heroes.forEach(hero => this.hero(hero))
             this.closeTableRow()
         }
     }

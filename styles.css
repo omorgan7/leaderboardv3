@@ -189,6 +189,14 @@ td, .cell {
     top: 12.5%;
 }
 
+.cell.cell-match-length {
+    width: 5em;
+}
+
+.cell.cell-team-heroes-header {
+    width: 20em;
+}
+
 img {
     height: 100%;
 }
