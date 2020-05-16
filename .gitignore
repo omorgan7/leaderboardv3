@@ -8,3 +8,4 @@ match_database.sqllite3
 secrets.json
 replays_backup/*
 log.txt
+*.log

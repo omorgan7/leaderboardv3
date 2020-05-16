@@ -33,8 +33,6 @@ exports.parseReplay = function(fileName, callback) {
             callback("Replay parse failed.", null)
             return
         }
-
-        fs.rename(file, "replays_backup/" + path.basename(tempName), () => {})
         
         const fileName = "replays/" + tempName
 

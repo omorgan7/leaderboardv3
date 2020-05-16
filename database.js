@@ -142,7 +142,8 @@ ORDER  BY match_id DESC`, player.id32)
 }
 
 exports.fetchPlayersByMmr = async function(db) {
-    return await db.allAsync("SELECT * FROM player_table ORDER BY mmr DESC LIMIT 50")
+    const query = await db.allAsync("SELECT * FROM (SELECT player_table.id32, player_table.id, name, mmr, count(match_id) AS match_count FROM match_player_table INNER JOIN player_table ON match_player_table.id32 = player_table.id32 GROUP BY player_table.id32 ORDER BY mmr DESC LIMIT 50) WHERE match_count > 5")
+    return query
 }
 
 exports.fetchPlayer = async function(db, id32) {
