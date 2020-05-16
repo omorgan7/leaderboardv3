@@ -68,7 +68,7 @@ app.post('/login', async (req, res, next) => {
 
     const form = new formidable.IncomingForm()
     form.parse(req, async (err, fields, files) => {
-        const result = true //await crypto.compare(fields.pw, loginHash)
+        const result = await crypto.compare(fields.pw, loginHash)
         if (result) {
             res.cookie('logged-in', 'true', loginCookieOptions)
             res.cookie('login-fail', '0', {maxAge: 0})
