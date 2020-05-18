@@ -52,8 +52,8 @@ exports.fetchMatches = async function(db) {
     for (let i = 0; i < matches.length; i++)  {
         const matchId = matches[i].id
         const heroes = await db.allAsync("SELECT hero_name, game_team FROM match_player_table WHERE match_id = ?", matchId)
-        matches[i].rad_heroes = heroes.filter(hero => hero.game_team === 2).map(hero => hero.hero_name)
-        matches[i].dire_heroes = heroes.filter(hero => hero.game_team === 3).map(hero => hero.hero_name)
+        matches[i].rad_heroes = heroes.filter(hero => hero.game_team === utilities.RADIANT).map(hero => hero.hero_name)
+        matches[i].dire_heroes = heroes.filter(hero => hero.game_team === utilities.DIRE).map(hero => hero.hero_name)
     }
     
     return matches
