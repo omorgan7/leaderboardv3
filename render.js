@@ -98,6 +98,16 @@ class Formatter {
             buffCell.reduce((prev, next) => prev + next), "cell cell-buff")
     }
 
+    matchDuration(duration, className) {
+        const { hours, minutes, seconds } = utilities.calculateMatchLength(duration)
+        return this.tableCell(`${hours > 0 ? `${hours}:`: ""}${minutes}:${seconds}`, className == undefined ? "cell cell-match-length" : className)
+    }
+
+    fullDateString(timestamp) {
+        const date = new Date(timestamp * 1000)
+        return `${date.getUTCHours().toString().padStart(2, "0")}:${date.getUTCMinutes().toString().padStart(2, "0")} ${date.getUTCDate().toString().padStart(2, "0")}/${(date.getUTCMonth() + 1).toString().padStart(2, "0")}/${date.getUTCFullYear()}`
+    }
+
 }
 
 class FrontPageFormatter extends Formatter {
@@ -145,12 +155,10 @@ class MatchesPageFormatter extends Formatter {
 
         for (const match of this.matches) {
             const { id, duration, winner, timestamp, rad_heroes, dire_heroes } = match
-            const date = new Date(timestamp * 1000)
-            const { hours, minutes, seconds } = utilities.calculateMatchLength(duration)
             this.openTableRow(`table-row ${winner === 2 ? "radiant" : "dire"}`)
             this.tableCell(`<a href="/matches/${id}">#${id}</a>`, "cell cell-player-match-id")
-            this.tableCell(`${date.getUTCHours().toString().padStart(2, "0")}:${date.getUTCMinutes().toString().padStart(2, "0")} ${date.getUTCDate().toString().padStart(2, "0")}/${(date.getUTCMonth() + 1).toString().padStart(2, "0")}/${date.getUTCFullYear()}`, "cell cell-player-date")
-            this.tableCell(`${hours > 0 ? `${hours}:`: ""}${minutes}:${seconds}`, "cell cell-match-length")
+            this.tableCell(this.fullDateString(timestamp), "cell cell-player-date")
+            this.matchDuration(duration)
             rad_heroes.forEach(hero => this.hero(hero))
             this.tableCell("", "cell cell-spacing")
             dire_heroes.forEach(hero => this.hero(hero))
@@ -230,8 +238,7 @@ class MatchFormatter extends Formatter {
     }
 
     matchHeader() {
-        const date = new Date(this.match.timestamp * 1000)
-        return this.div("match-header", `#${this.match.id} – ${date.getUTCHours().toString().padStart(2, "0")}:${date.getUTCMinutes().toString().padStart(2, "0")} ${date.getUTCDate().toString().padStart(2, "0")}/${(date.getUTCMonth() + 1).toString().padStart(2, "0")}/${date.getUTCFullYear()}`)
+        return this.div("match-header", `#${this.match.id} – ${this.fullDateString(this.match.timestamp)}`)
     }
 
     duration() {
@@ -263,7 +270,7 @@ class PlayerFormatter extends Formatter {
     }
 
     winPercentage() {
-        const percent = this.player.winCount / this.player.matchCount * 100.0;
+        const percent = this.player.winCount / this.player.matchCount * 100.0
         return this.openDiv("player-section").div("player-win-pc-header", "Win Rate").div("player-win-pc-value", `${percent.toFixed(1)}%`).closeDiv()
     }
 
@@ -275,6 +282,7 @@ class PlayerFormatter extends Formatter {
         .tableCell("Team", "cell cell-long")
         .tableCell("Victory", "cell cell-long")
         .tableCell("Match ID", "cell cell-player-match-id")
+        .tableCell("Duration", "cell cell-long")
         .tableCell("K")
         .tableCell("D")
         .tableCell("A")
@@ -287,13 +295,12 @@ class PlayerFormatter extends Formatter {
 
     matches(matches) {
         for (let match of matches) {
-            const winner = match.winner == match.game_team;
+            const winner = match.winner == match.game_team
 
             this.openTableRow(winner ? "radiant" : "dire")
             this.hero(match.hero_name)
 
-            const date = new Date(match.timestamp * 1000)
-            this.tableCell(`${date.getUTCHours().toString().padStart(2, "0")}:${date.getUTCMinutes().toString().padStart(2, "0")} ${date.getUTCDate().toString().padStart(2, "0")}/${(date.getUTCMonth() + 1).toString().padStart(2, "0")}/${date.getUTCFullYear()}`.padStart(2, "0"), "cell cell-player-date")
+            this.tableCell(this.fullDateString(match.timestamp), "cell cell-player-date")
 
             let team = utilities.teamIntToString(match.game_team)
             team = team.charAt(0).toLocaleUpperCase() + team.substr(1)
@@ -301,6 +308,8 @@ class PlayerFormatter extends Formatter {
 
             this.tableCell(winner ? "Victory" : "Defeat", "cell cell-long")
             this.tableCell(`<a href=/matches/${match.match_id}> #${match.match_id}</a>`, "cell cell-player-match-id")
+
+            this.matchDuration(match.duration)
             this.tableCell(`${match.kills}`)
             this.tableCell(`${match.deaths}`)
             this.tableCell(`${match.assists}`)

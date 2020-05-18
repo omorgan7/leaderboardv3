@@ -103,10 +103,12 @@ body {
     height: 40px;
     margin-top: 0;
     padding: 0 32px;
+    background-color: rgba(27, 29, 59, 0.4);
 }
 
 .nav-item {
-    font-size: 1.5em;
+    font-family: 'Cinzel', serif;
+    font-size: 1.2em;
     text-align: left;
 }
 
