@@ -91,14 +91,45 @@ body {
     position: relative;
     left: 0;
     right: 0;
+    margin: 0;
     z-index: 0;
     background-color: rgb(35, 35, 35);
     text-align: center;
 }
-form {
-    display: inline-block;
+
+.nav-bar {
+    align-items: center;
+    display: flex;
+    height: 40px;
+    margin-top: 0;
+    padding: 0 32px;
+}
+
+.nav-item {
+    font-size: 1.5em;
     text-align: left;
 }
+
+.nav-item:nth-of-type(2) {
+    flex-grow: 1;
+    margin-left: 32px;
+}
+
+form {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+form input[type="file"] {  
+    position: relative;
+    left: 34px;
+}
+
+form input[type="submit"] {
+    margin-top: 32px;
+}
+
 input {
     color: black;
 }
@@ -156,6 +187,18 @@ td, .cell {
 }
 .cell.cell.cell-player-date {
     top: 12.5%;
+}
+
+.cell.cell-match-length {
+    width: 5em;
+}
+
+.cell.cell-team-heroes-header {
+    width: 22em;
+}
+
+.cell.cell-spacing {
+    width: 2em;
 }
 
 img {

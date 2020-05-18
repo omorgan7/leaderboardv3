@@ -46,6 +46,19 @@ exports.validPlayers = async function(db, ids) {
     return await db.allAsync("SELECT * FROM player_table where id32 IN " + queryString, ids.flat())
 }
 
+exports.fetchMatches = async function(db) {
+    const matches = await db.allAsync("SELECT id, duration, winner, timestamp FROM match_table ORDER BY id DESC")
+    
+    for (let i = 0; i < matches.length; i++)  {
+        const matchId = matches[i].id
+        const heroes = await db.allAsync("SELECT hero_name, game_team FROM match_player_table WHERE match_id = ?", matchId)
+        matches[i].rad_heroes = heroes.filter(hero => hero.game_team === utilities.RADIANT).map(hero => hero.hero_name)
+        matches[i].dire_heroes = heroes.filter(hero => hero.game_team === utilities.DIRE).map(hero => hero.hero_name)
+    }
+    
+    return matches
+}
+
 exports.fetchMatch = async function(db, matchID) {
     const match = await db.getAsync("SELECT * FROM match_table WHERE id = ?", matchID)
     match.player = await db.allAsync("SELECT * FROM match_player_table WHERE match_id = ?", matchID)

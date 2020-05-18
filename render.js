@@ -128,6 +128,37 @@ class FrontPageFormatter extends Formatter {
     }
 }
 
+class MatchesPageFormatter extends Formatter {
+    constructor(page, matches) {
+        super(page)
+        this.matches = matches
+    }
+
+    matchesTable() {
+        this.openTableRow("table-row-big-header")
+        this.tableCell("Match ID", "cell cell-player-match-id")
+        this.tableCell("Date", "cell cell-player-date-header")
+        this.tableCell("Length", "cell cell-match-length")
+        this.tableCell("Radiant", "cell cell-team-heroes-header")
+        this.tableCell("Dire", "cell cell-team-heroes-header")
+        this.closeTableRow()
+
+        for (const match of this.matches) {
+            const { id, duration, winner, timestamp, rad_heroes, dire_heroes } = match
+            const date = new Date(timestamp * 1000)
+            const { hours, minutes, seconds } = utilities.calculateMatchLength(duration)
+            this.openTableRow(`table-row ${winner === 2 ? "radiant" : "dire"}`)
+            this.tableCell(`<a href="/matches/${id}">#${id}</a>`, "cell cell-player-match-id")
+            this.tableCell(`${date.getUTCHours().toString().padStart(2, "0")}:${date.getUTCMinutes().toString().padStart(2, "0")} ${date.getUTCDate().toString().padStart(2, "0")}/${(date.getUTCMonth() + 1).toString().padStart(2, "0")}/${date.getUTCFullYear()}`, "cell cell-player-date")
+            this.tableCell(`${hours > 0 ? `${hours}:`: ""}${minutes}:${seconds}`, "cell cell-match-length")
+            rad_heroes.forEach(hero => this.hero(hero))
+            this.tableCell("", "cell cell-spacing")
+            dire_heroes.forEach(hero => this.hero(hero))
+            this.closeTableRow()
+        }
+    }
+}
+
 class MatchFormatter extends Formatter {
 
     constructor(page, match) {
@@ -204,8 +235,8 @@ class MatchFormatter extends Formatter {
     }
 
     duration() {
-        const timestamp = utilities.secondsToMinuteSeconds(this.match.duration)
-        return this.div("date", `Duration: ${timestamp.minutes}:${timestamp.seconds}`)
+        const timestamp = utilities.calculateMatchLength(this.match.duration)
+        return this.div("date", `Duration: ${timestamp.hours > 0 ? `${timestamp.hours}:` : ""}${timestamp.minutes}:${timestamp.seconds}`)
     }
 }
 
@@ -289,6 +320,7 @@ class Render {
         this.db = db
         this.templateString = require('fs').readFileSync("template.html", "utf8")
         this.homePage = require('fs').readFileSync("index.html", "utf8")
+        this.matchesPage = require('fs').readFileSync("matches.html", "utf8")
     }
 
     async buildFrontpage() {
@@ -314,6 +346,19 @@ class Render {
         formatter.playerTable(players)
 
         formatter.closeDiv()
+        return this.closeTemplate(formatter.page)
+    }
+
+    async buildMatchespage() {
+        const matches = await database.fetchMatches(this.db)
+        const formatter = new MatchesPageFormatter(String(this.matchesPage), matches)
+
+        formatter.openDiv("table")
+
+        formatter.matchesTable(matches)
+
+        formatter.closeDiv()
+
         return this.closeTemplate(formatter.page)
     }
 

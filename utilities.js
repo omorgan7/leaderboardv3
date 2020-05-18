@@ -58,11 +58,21 @@ exports.equals = function(x, y) {
         if (y.hasOwnProperty(p) && !x.hasOwnProperty(p)) return false;
     }
     return true;
-  }
+}
 
-  exports.secondsToMinuteSeconds = function(duration) {
-      const minutes = Math.round(duration / 60)
-      const seconds = Math.round(duration % 60)
+exports.calculateMatchLength = function(duration) {
+    const time = Math.round(duration)
+    const hours = Math.floor(time / 3600)
+    const remainingSeconds = time - hours * 3600
 
-      return ({minutes: minutes, seconds: seconds})
-  }
+    const minutes = Math.floor(remainingSeconds / 60)
+    const seconds = remainingSeconds - minutes * 60
+
+    return {
+        hours,
+        minutes: padTime(minutes),
+        seconds: padTime(seconds)
+    }
+}
+
+padTime = number => String(number).padStart(2, "0")
