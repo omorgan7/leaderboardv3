@@ -5,17 +5,19 @@ const fs = require("fs")
 const path = require("path")
 
 function fileFromStdOut(stdout) {
-    // the file name should be the first line in stdout.
-    let fileName = stdout.split("\n")[0]
 
     // validate stdout
-    const matched = /^[\d]+\.json$/.exec(fileName)
-    if (matched == null) {
+    const lines = stdout.split('\n')
+    const matched = lines.map((line) => /^[\d]+\.json$/.exec(line)).filter((match) => match != null)[0][0]
+    if (!matched) {
         console.log("Invalid output from stdout from parser:", stdout)
         return null
     }
+    if (lines.length > 1) {
+        console.log("Warning - additional output from parser: ", stdout)
+    }
 
-    return fileName
+    return matched
 }
 
 exports.parseReplay = function(fileName, callback) {
