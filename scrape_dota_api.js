@@ -1,5 +1,6 @@
 const fs = require('fs')
-const http = require('https')
+const https = require('https')
+const http = require('http')
 const secrets = require('./secrets')
 
 function fileClose(response) {
@@ -25,7 +26,7 @@ function fileClose(response) {
     })
 }
 
-http.get(`https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v1/?key=${secrets.steamKey}`, (response) => {
+https.get(`https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v1/?key=${secrets.steamKey}`, (response) => {
     if (response.statusCode != 200) {
         console.log(`Error attempting to read heroes json with code ${response.statusCode}: ${response.statusMessage}`)
         return
@@ -40,7 +41,7 @@ http.get(`https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v1/?key=${secret
         const heroes = JSON.parse(str).result
 
         for (const hero of heroes.heroes) {
-            const base = "https://cdn.dota2.com/apps/dota2/images/heroes/"
+            const base = "http://cdn.dota2.com/apps/dota2/images/heroes/"
             const name = hero.name.replace("npc_dota_hero_", "")
         
             const appendices = ["_full.png", "_sb.png", "_lg.png", "_vert.jpg"]
@@ -59,7 +60,7 @@ http.get(`https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v1/?key=${secret
     })
     
 })
-http.get(`https://api.steampowered.com/IEconDOTA2_570/GetGameItems/v1/?key=${secrets.steamKey}`, (response) => {
+https.get(`https://api.steampowered.com/IEconDOTA2_570/GetGameItems/v1/?key=${secrets.steamKey}`, (response) => {
     if (response.statusCode != 200) {
         console.log(`Error attempting to read items json with code ${response.statusCode}: ${response.statusMessage}`)
         return
@@ -73,7 +74,7 @@ http.get(`https://api.steampowered.com/IEconDOTA2_570/GetGameItems/v1/?key=${sec
     })
 
     response.on("end", () => {
-        const base = "https://cdn.dota2.com/apps/dota2/images/items/"
+        const base = "http://cdn.dota2.com/apps/dota2/images/items/"
         const items = JSON.parse(str).result
 
         for (const item of items.items) {
