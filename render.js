@@ -120,6 +120,7 @@ class FrontPageFormatter extends Formatter {
         this.tableCell("Rank", "cell cell-big")
         this.tableCell("", "cell  cell-big cell-player-profile-pic")
         this.tableCell("Name",  "cell cell-big cell-big-player-name")
+        this.tableCell("Win/Loss",  "cell cell-big cell-win-loss")
         this.tableCell("MMR", "cell cell-big")
         this.closeTableRow()
         for (let i = 0; i < players.length; i++) {
@@ -131,6 +132,7 @@ class FrontPageFormatter extends Formatter {
             this.tableCell(`<img src=${player.metadata.avatarfull}</img>`, "cell  cell-big cell-player-profile-pic")
             
             this.tableCell(`<a href=/player/${player.id32}> ${name}</a>`, "cell cell-big cell-big-player-name")
+            this.tableCell(`${player.winCount}-${player.lossCount}`, "cell cell-big cell-win-loss")
             this.tableCell(player.mmr.toFixed(0), "cell cell-big")
             this.closeTableRow()
         }

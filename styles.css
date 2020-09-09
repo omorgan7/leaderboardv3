@@ -302,6 +302,10 @@ img {
     word-wrap: anywhere;
 }
 
+.cell.cell-win-loss {
+    width: 5em;
+}
+
 .cell.cell-big {
     min-width: 1em;
     font-family: 'Cinzel', serif;
