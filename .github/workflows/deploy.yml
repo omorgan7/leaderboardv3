@@ -1,0 +1,21 @@
+name: Deploy to server
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout & Reboot
+        run: |
+          ssh root@139.59.191.97
+          echo "hello world" > github.test
+          # cd /usr/leaderboard-v3
+          # git checkout master && git pull
+          # pm2 restart bvgs_leaderboard
+        shell: bash
+        env:
+          SSH_PRIVATE_KEY: ${{secrets.SSH_PRIVATE_KEY}}
