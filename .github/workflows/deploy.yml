@@ -16,10 +16,7 @@ jobs:
           ssh-agent -a $SSH_AUTH_SOCK > /dev/null
           ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
           ssh-keyscan "139.59.191.97" >> ~/.ssh/known_hosts
-          ssh root@139.59.191.97 echo "hello world" > github.test
-          # cd /usr/leaderboard-v3
-          # git checkout master && git pull
-          # pm2 restart bvgs_leaderboard
+          ssh root@139.59.191.97 "cd /usr/leaderboardv3 && git checkout master && git pull && pm2 restart bvgs_leaderboard"
         shell: bash
         env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock  
