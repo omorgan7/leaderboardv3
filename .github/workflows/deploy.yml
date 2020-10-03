@@ -15,6 +15,7 @@ jobs:
           ssh-keyscan github.com >> ~/.ssh/known_hosts
           ssh-agent -a $SSH_AUTH_SOCK > /dev/null
           ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
+          ssh-keyscan "139.59.191.97" >> ~/.ssh/known_hosts
           ssh root@139.59.191.97
           echo "hello world" > github.test
           # cd /usr/leaderboard-v3
