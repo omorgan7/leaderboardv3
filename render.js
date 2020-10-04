@@ -1,6 +1,6 @@
 'use strict'
 
-const fs = require('fs').promises
+const fs = require('fs')
 const database = require('./database')
 const steam = require('./steam_api')
 const utilities = require('./utilities')
@@ -333,9 +333,9 @@ class PlayerFormatter extends Formatter {
 class Render {
     constructor(db) {
         this.db = db
-        this.templateString = require('fs').readFileSync("template.html", "utf8")
-        this.homePage = require('fs').readFileSync("index.html", "utf8")
-        this.matchesPage = require('fs').readFileSync("matches.html", "utf8")
+        this.templateString = fs.readFileSync("template.html", "utf8")
+        this.homePage = fs.readFileSync("index.html", "utf8")
+        this.matchesPage = fs.readFileSync("matches.html", "utf8")
     }
 
     async buildFrontpage() {
@@ -378,7 +378,6 @@ class Render {
     }
 
     async buildPlayer(playerID, page) {
-        const fileName = `cached/${playerID}.html`
 
         const matchesPerPage = 10
 
@@ -426,7 +425,6 @@ class Render {
     }
 
     async buildMatch(matchID) {
-        const fileName = `cached/${matchID}.html`
 
         const match = await database.fetchMatch(this.db, matchID)
 
@@ -456,10 +454,6 @@ class Render {
         formatter.page += `<script>document.querySelector('body').id = '${utilities.teamIntToString(match.winner)}-filter'</script>`
 
         return this.closeTemplate(formatter.page)
-
-        // fs.writeFile(fileName, this.closeTemplate(page + JSON.stringify(match)), (err) => {
-        //     callback(err, err ? null : fileName)
-        // })
     }
 
     async matchPage(matchID) {
