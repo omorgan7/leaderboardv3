@@ -41,6 +41,13 @@ app.get('/', async (req, res, next) => {
 })
 
 app.get('/matches', async (req, res, next) => {
+
+    // permanent redirect.
+    res.set('location', '/match')
+    res.status(301).send()
+})
+
+app.get('/match', async (req, res, next) => {
     const page = await renderer.buildMatchespage()
     res.send(page)
 })
