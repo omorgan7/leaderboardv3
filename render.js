@@ -24,6 +24,10 @@ class Formatter {
         this.page = page
     }
 
+    title(description) {
+        this.page = this.page + `<title>${description}</title>`
+        return this
+    }
     div(className, str) {
         this.page = this.page + `<div class='${className}'>${str}</div>\n`
         return this
@@ -398,6 +402,7 @@ class Render {
 
         const formatter = new PlayerFormatter(String(this.templateString), player)
         
+        formatter.title(player.metadata.personaname + " - Stats")
         formatter.openDiv("player-header")
         formatter.profilePicture().playerName().mmr().winLoss().winPercentage().closeDiv()
 
@@ -426,6 +431,8 @@ class Render {
         const match = await database.fetchMatch(this.db, matchID)
 
         const formatter = new MatchFormatter(String(this.templateString), match)
+
+        formatter.title(`Match - ${matchID}`)
         formatter.matchHeader()
         formatter.winner()
         formatter.duration()
