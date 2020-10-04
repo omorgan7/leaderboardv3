@@ -65,13 +65,11 @@ class Formatter {
     items(itemsStr) {
         const items = itemsStr.split(",").map((item) => "/dota_assets/" + item + "_lg.png")
 
-        let extraClass = items.length > 6 ? "cell cell-item-adjust" : "cell cell-item-img"
-
         return this.tableCell(
             items.slice(0, 6)
-            .reduce((prev, next) => prev + `<img src='${next}'></img>`, ""), extraClass)
+            .reduce((prev, next) => prev + `<img src='${next}'></img>`, ""), "cell cell-item-img")
             + this.tableCell(items.slice(6)
-            .reduce((prev, next) => prev + `<img src='${next}'></img>`, ""), extraClass)
+            .reduce((prev, next) => prev + `<img src='${next}'></img>`, ""), "cell cell-item-img")
     }
 
     buffs(buffsStr) {
