@@ -6,6 +6,11 @@ const secrets = require('./secrets')
 function fileClose(response) {
     if (response.statusCode != 200) {
         console.log(`Error attempting to read ${this.url} with code ${response.statusCode}: ${response.statusMessage}`)
+        if (response.statusCode == 502) { // timeout
+            console.log(`Refetching: ${this.url}`)
+            const request = http.get(this.url, {rejectUnauthorized: false}, fileClose.bind({name: this.name, url: this.url}))
+                .on('error', (err) => console.log("Bad response reading " + url + " " + err))
+        }
         return
     }
 
@@ -39,6 +44,8 @@ https.get(`https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v1/?key=${secre
 
     response.on("end", () => {
         const heroes = JSON.parse(str).result
+
+        fs.writeFileSync('dota_assets/heroes.json', JSON.stringify(heroes.heroes))
 
         for (const hero of heroes.heroes) {
             const base = "http://cdn.dota2.com/apps/dota2/images/heroes/"
@@ -76,6 +83,8 @@ https.get(`https://api.steampowered.com/IEconDOTA2_570/GetGameItems/v1/?key=${se
     response.on("end", () => {
         const base = "http://cdn.dota2.com/apps/dota2/images/items/"
         const items = JSON.parse(str).result
+
+        fs.writeFileSync('dota_assets/items.json', JSON.stringify(items.items))
 
         for (const item of items.items) {
             const url = item.name.replace("item_", base) + "_lg.png"
