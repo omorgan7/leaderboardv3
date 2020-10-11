@@ -362,14 +362,30 @@ class Render {
         return this.closeTemplate(formatter.page)
     }
 
-    async buildMatchespage() {
-        const matches = await database.fetchMatches(this.db)
+    async buildMatchesPage(page) {
+        const matchesPerPage = 12
+
+        const startPage = (page - 1) * matchesPerPage
+        const endPage = page * matchesPerPage
+
+        const matches = await database.fetchMatches(this.db, startPage, endPage)
         const formatter = new MatchesPageFormatter(String(this.matchesPage), matches)
 
         formatter.openDiv("table")
 
         formatter.matchesTable(matches)
 
+        formatter.closeDiv()
+
+        formatter.openDiv("paginate")
+        
+        if (page != 1) {
+            formatter.page += `<a href="/match+page=${page - 1}">Previous Page | </a>`
+        }
+        if (matches.length != 0) {
+            formatter.page += `<a href="/match+page=${page + 1}">Next Page </a>`
+        }
+    
         formatter.closeDiv()
 
         return this.closeTemplate(formatter.page)
@@ -417,7 +433,9 @@ class Render {
         if (page != 1) {
             formatter.page += `<a href="/player/${player.id32}/${page - 1}">Previous Page | </a>`
         }
-        formatter.page += `<a href="/player/${player.id32}/${page + 1}">Next Page </a>`
+        if (matches.length != 0) {
+            formatter.page += `<a href="/player/${player.id32}/${page + 1}">Next Page </a>`
+        }
         formatter.closeDiv()
         return this.closeTemplate(formatter.page)
     }

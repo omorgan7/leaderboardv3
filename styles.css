@@ -301,8 +301,9 @@ img {
 }
 
 .paginate {
-    margin: auto;
-    width: fit-content;
+    padding-left: 40%;
+    width: 13em;
+    text-align: right;
     background-color: rgba(27, 29, 59, 0.4);
     font-family: 'Open Sans', sans-serif;
 }

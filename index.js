@@ -43,12 +43,25 @@ app.get('/', async (req, res, next) => {
 app.get('/matches', async (req, res, next) => {
 
     // permanent redirect.
-    res.set('location', '/match')
+    res.set('location', '/match+page=1')
     res.status(301).send()
 })
 
 app.get('/match', async (req, res, next) => {
-    const page = await renderer.buildMatchespage()
+
+    // permanent redirect.
+    res.set('location', '/match+page=1')
+    res.status(301).send()
+})
+
+app.get(/match\+page=(\d+)/, async (req, res, next) => {
+    const paginate = Number.parseInt(req.params[0])
+    if (paginate == NaN)
+    {
+        res.send(404)
+        return
+    }
+    const page = await renderer.buildMatchesPage(paginate)
     res.send(page)
 })
 

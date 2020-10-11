@@ -46,8 +46,17 @@ exports.validPlayers = async function(db, ids) {
     return await db.allAsync("SELECT * FROM player_table where id32 IN " + queryString, ids.flat())
 }
 
-exports.fetchMatches = async function(db) {
-    const matches = await db.allAsync("SELECT id, duration, winner, timestamp FROM match_table ORDER BY id DESC")
+exports.fetchMatches = async function(db, start, end) {
+    const matches = await db.allAsync(`SELECT id, duration, winner, timestamp FROM(
+        SELECT
+            ROW_NUMBER() OVER (
+                ORDER BY match_table.id DESC
+                ) RowNum, *
+            FROM match_table
+            ) t
+            WHERE RowNum > ? AND RowNum <= ?
+            ORDER BY t.id DESC
+            `, start, end)
     
     for (let i = 0; i < matches.length; i++)  {
         const matchId = matches[i].id
