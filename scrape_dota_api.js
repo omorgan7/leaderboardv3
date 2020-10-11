@@ -31,7 +31,7 @@ function fileClose(response) {
     })
 }
 
-https.get(`https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v1/?key=${secrets.steamKey}`, (response) => {
+https.get(`https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v1/?key=${secrets.steamKey}&language=en`, (response) => {
     if (response.statusCode != 200) {
         console.log(`Error attempting to read heroes json with code ${response.statusCode}: ${response.statusMessage}`)
         return
@@ -67,7 +67,7 @@ https.get(`https://api.steampowered.com/IEconDOTA2_570/GetHeroes/v1/?key=${secre
     })
     
 })
-https.get(`https://api.steampowered.com/IEconDOTA2_570/GetGameItems/v1/?key=${secrets.steamKey}`, (response) => {
+https.get(`https://api.steampowered.com/IEconDOTA2_570/GetGameItems/v1/?key=${secrets.steamKey}&language=en`, (response) => {
     if (response.statusCode != 200) {
         console.log(`Error attempting to read items json with code ${response.statusCode}: ${response.statusMessage}`)
         return
