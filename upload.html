@@ -6,21 +6,73 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>BVGS Dota 2</title>
     </head>
-    <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css?family=Open+Sans">
-    <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css?family=Cinzel">
-    <link rel="stylesheet" type="text/css" href="styles.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Cinzel">
+    <link rel="stylesheet" type="text/css" href="/styles.css">
     <body>
+        <div class="nav-bar">
+          <a class="nav-item" href="/">Leaderboard</a>
+          <a class="nav-item" href="/match">Matches</a>
+        </div>
         <h3><a href="/">BVGS INHOUSE</a></h3>
         <h1>ADD REPLAY</h1>
-        <h2 id="login-fail"></h2>
+        <noscript>
+          <div>Please enable Javascript for file uploads.</div>
+          <br>
+        </noscript>
         <div class="create">
-            <form method="POST" enctype="multipart/form-data" action="/create">
+            <form id="create_form" enctype="multipart/form-data">
                 <label for="profilePic">Replay File</label>
-                <input type="file" name="replay" class="input-type-file">
-                <input type="submit" id="submit-score">
+                <input type="file" name="replay" id="replay" class="input-type-file">
+                <progress id="progress-bar" value="0" max="100" style="width:20%"></progress>
+                <input type="button" id="submit-score" value="Submit">
+                <h2 id="status"></h3>
+                <h2 id="loaded-total"></p>
             </form>
         </div>
+        <script>
+
+function element(el) {
+  return document.getElementById(el)
+}
+
+element("submit-score").addEventListener('click', uploadFile)
+
+function uploadFile() {
+  const file = element("replay").files[0]
+  const formdata = new FormData()
+  formdata.append("replay", file)
+  const ajax = new XMLHttpRequest()
+  ajax.upload.addEventListener("progress", progressHandler, false)
+  ajax.addEventListener("load", completeHandler, false)
+  ajax.addEventListener("error", errorHandler, false)
+  ajax.addEventListener("abort", abortHandler, false)
+  ajax.open("POST", "/create") 
+  ajax.send(formdata)
+}
+
+function progressHandler(event) {
+
+  const byteLoaded = Math.round(100 * event.loaded / (1024 * 1024 * 100))
+  const byteTotal = Math.round(100 * event.total / (1024 * 1024 * 100))
+  element("loaded-total").innerHTML = `Uploaded ${byteLoaded}MB of ${byteTotal}MB`
+  const percent = (event.loaded / event.total) * 100
+  element("progress-bar").value = Math.round(percent)
+  element("status").innerHTML = Math.round(percent) + "% uploaded... please wait."
+}
+
+function completeHandler(event) {
+  window.location.href = event.target.responseURL
+  element("progress-bar").value = 0
+}
+
+function errorHandler(event) {
+  element("status").innerHTML = "Upload Failed"
+}
+
+function abortHandler(event) {
+  element("status").innerHTML = "Upload Aborted"
+}
+        </script>
     </body>
 </html>

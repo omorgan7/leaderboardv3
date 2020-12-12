@@ -181,14 +181,17 @@ app.get('/upload', (req, res, next) => {
 
 app.post('/create', (req, res, next) => {
     const form = new formidable.IncomingForm()
+    form.maxFileSize = 512 * 1024 * 1024
     form.parse(req, (err, fields, files) => {
         if (err) {
             console.log("Error: ", err, "With: ", fields, files)
+            res.end()
             return
         }
         parser.parseReplay(files.replay.path, async (err, matchData) => {
             if (err) {
                 console.log("Error: Replay parse error:", err)
+                res.end()
                 return
             }
             await database.addMatch(db, matchData)

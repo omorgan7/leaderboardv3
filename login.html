@@ -6,12 +6,14 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>BVGS Dota 2</title>
     </head>
-    <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css?family=Open+Sans">
-    <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css?family=Cinzel">
-    <link rel="stylesheet" type="text/css" href="styles.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Cinzel">
+    <link rel="stylesheet" type="text/css" href="/styles.css">
     <body>
+        <div class="nav-bar">
+            <a class="nav-item" href="/">Leaderboard</a>
+            <a class="nav-item" href="/match">Matches</a>
+          </div>
         <h1>LOG IN</h1>
         <h2 id='login-fail'></h2>
         <script>
@@ -27,8 +29,8 @@
         </script>   
         <div class='login'>
             <form method='POST' action='/login'>
-                <input type='password' name='pw'>
-                <input type='submit' value='Login'>
+                <input type='password' name='pw' id='pw-input'>
+                <input type='submit' value='Login' id='pw-submit'>
             </form>
         </div>
     </body>
