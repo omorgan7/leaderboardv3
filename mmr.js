@@ -8,7 +8,7 @@ const baseMmr = 25
 const mmrCap = 20
 const thresholdFactor = 50
 
-const calibrationFactors = [2.0, 1.8, 1.6, 1.4, 1.2]
+const calibrationFactors = [1.6, 1.5, 1.4, 1.3, 1.2, 1.1]
 const mmrChanges = {
     "0": 0,
     "1": 1,
@@ -18,7 +18,7 @@ const mmrChanges = {
     "5": 15,
     "6": 21,
 }
-const streakFactor = 1.2
+const streakFactor = 1.05
 
 function averageMmr(team) {
     return team.reduce((prev, current) => {
@@ -55,8 +55,9 @@ exports.updateMmrSystem = function(players, winner) {
         change = player.game_team == winner ? change : -change
 
         // move a _lot_ of mmr if you are calibrating
-        if (player.matchCount < calibrationFactors.length) {
-            change *= calibrationFactors[player.matchCount - 1]
+        if (player.calibration_games > 1) {
+            change *= calibrationFactors[player.calibration_games - 1]
+            player.calibration_games -= 1
         }
         else if (player.winStreak || player.lossStreak) {
             change *= streakFactor

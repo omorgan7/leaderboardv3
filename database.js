@@ -15,7 +15,7 @@ exports.createDatabase = async function() {
     const db = exports.startDatabase()
 
     await db.runAsync("CREATE TABLE match_table(id bigint, duration float, winner int, timestamp bigint, radkills int, direkills int)")
-    await db.runAsync("CREATE TABLE player_table(id char, id32 bigint, name char, mmr int)")
+    await db.runAsync("CREATE TABLE player_table(id char, id32 bigint, name char, mmr int, calibration_games, badges char)")
 
     // This table, after match_id, is sorted by key.
     await db.runAsync("CREATE TABLE match_player_table(match_id bigint, assists int, buffs char, captain int, damage int, deaths int, denies int, game_team int, gpm float, healing int, hero_name char, id32 bigint, items char, kills int, last_hits int, level int, player_name char, steam_id char, xpm float)")
@@ -84,7 +84,7 @@ exports.fetchMatchCountForPlayers = async function(db, players) {
 }
 
 exports.fetchPlayersFromMatch = async function(db, matchID) {
-    const match = await db.allAsync("SELECT player_table.mmr, player_table.id32, match_player_table.game_team FROM match_player_table INNER JOIN player_table ON match_player_table.id32 = player_table.id32 where match_player_table.match_id = ? ORDER BY player_table.id32 DESC", matchID)
+    const match = await db.allAsync("SELECT player_table.mmr, player_table.id32, match_player_table.game_team, player_table.calibration_games FROM match_player_table INNER JOIN player_table ON match_player_table.id32 = player_table.id32 where match_player_table.match_id = ? ORDER BY player_table.id32 DESC", matchID)
 
     return match
 }
@@ -108,6 +108,13 @@ exports.updatePlayersMmr = async function(db, players) {
     await Promise.all(players.map(async (player) => {
         console.log(`Updating mmr of player: ${player.id32} to ${player.mmr}`)
         await db.runAsync(`UPDATE player_table SET mmr = ? WHERE id32 = ?`, player.mmr, player.id32)
+    }))
+}
+
+exports.updatePlayersCalibration = async function(db, players) {
+    await Promise.all(players.map(async (player) => {
+        console.log(`Updating calibration of player: ${player.id32} to ${player.calibration_games}`)
+        await db.runAsync(`UPDATE player_table SET calibration_games = ? WHERE id32 = ?`, player.calibration_games, player.id32)
     }))
 }
 
@@ -164,7 +171,7 @@ ORDER  BY match_id DESC`, player.id32)
 }
 
 exports.fetchPlayersByMmr = async function(db) {
-    const query = await Promise.all((await db.allAsync("SELECT * FROM (SELECT player_table.id32, player_table.id, name, mmr, count(match_id) AS match_count FROM match_player_table INNER JOIN player_table ON match_player_table.id32 = player_table.id32 GROUP BY player_table.id32 ORDER BY mmr DESC) WHERE match_count > 5 LIMIT 50")).map(async player => ({
+    const query = await Promise.all((await db.allAsync("SELECT * FROM (SELECT player_table.id32, player_table.id, player_table.calibration_games, name, mmr, count(match_id) AS match_count FROM match_player_table INNER JOIN player_table ON match_player_table.id32 = player_table.id32 GROUP BY player_table.id32 ORDER BY mmr DESC) WHERE calibration_games == 0 LIMIT 50")).map(async player => ({
         ...player,
         ...await exports.fetchPlayer(db, player.id32)
 
@@ -187,13 +194,11 @@ exports.fetchPlayer = async function(db, id32) {
 async function updatePlayersMmrAfterMatch(db, matchID, winner) {
     const players = await exports.fetchPlayersFromMatch(db, matchID)
     const playerStreaks = await exports.playerOnStreak(db, players, 3)
-    const matchCounts = await exports.fetchMatchCountForPlayers(db, players)
 
     playerStreaks.sort((a, b) => a.id32 < b.id32)
-    matchCounts.sort((a, b) => a.id32 < b.id32)
     for (let i = 0; i < playerStreaks.length; ++i) {
-        players[i].matchCount = matchCounts[i].matchCount
 
+        players[i].streakCount = playerStreaks[i].streak_count
         if (playerStreaks[i].streak_count > 3) {
             players[i].winStreak = playerStreaks[i].streak_type == "win"
             players[i].loseStreak = playerStreaks[i].streak_type == "lose"
@@ -204,8 +209,10 @@ async function updatePlayersMmrAfterMatch(db, matchID, winner) {
         }
     }
 
+    const calibratingPlayers = players.filter((player) => player.calibration_games > 0);
     mmr.updateMmrSystem(players, winner)
     await exports.updatePlayersMmr(db, players)
+    await exports.updatePlayersCalibration(db, calibratingPlayers)
 }
 
 exports.addMatch = async function(db, matchData) {
@@ -251,10 +258,11 @@ exports.addMatch = async function(db, matchData) {
     if (newPlayers.length > 0) {
         newPlayers = newPlayers.map((player) => {
             player.mmr = mmr.startingMmr
+            player.calibration_games = 6
             return player
         })
-        let valueString = "(?, ?, ?, ?),".repeat(newPlayers.length).slice(0, -1)
-        await db.runAsync(`INSERT INTO player_table(id, id32, name, mmr) VALUES` + valueString, newPlayers.map((player) => Object.values(player)).flat())
+        let valueString = "(?, ?, ?, ?, ?),".repeat(newPlayers.length).slice(0, -1)
+        await db.runAsync(`INSERT INTO player_table(id, id32, name, mmr, calibration_games) VALUES` + valueString, newPlayers.map((player) => Object.values(player)).flat())
     }
 
     // sort all match keys by alphabetical order within the table
