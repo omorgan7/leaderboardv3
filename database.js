@@ -195,6 +195,8 @@ async function updatePlayersMmrAfterMatch(db, matchID, winner) {
     const players = await exports.fetchPlayersFromMatch(db, matchID)
     const playerStreaks = await exports.playerOnStreak(db, players, 3)
 
+    const calibratingPlayers = players.filter((player) => player.calibration_games > 0);
+
     playerStreaks.sort((a, b) => a.id32 < b.id32)
     for (let i = 0; i < playerStreaks.length; ++i) {
 
@@ -208,8 +210,7 @@ async function updatePlayersMmrAfterMatch(db, matchID, winner) {
             players[i].loseStreak = false
         }
     }
-
-    const calibratingPlayers = players.filter((player) => player.calibration_games > 0);
+    
     mmr.updateMmrSystem(players, winner)
     await exports.updatePlayersMmr(db, players)
     await exports.updatePlayersCalibration(db, calibratingPlayers)
