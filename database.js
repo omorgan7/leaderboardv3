@@ -188,6 +188,11 @@ exports.fetchPlayer = async function(db, id32) {
         "SELECT COUNT(*) FROM match_player_table INNER JOIN match_table ON match_table.id = match_player_table.match_id AND match_player_table.game_team = match_table.winner WHERE match_player_table.id32 = ?", id32))["COUNT(*)"]
     player.lossCount = player.matchCount - player.winCount
 
+    if (player.badges) {
+        player.badges = JSON.parse(player.badges)
+    }
+    
+
     return player
 }
 

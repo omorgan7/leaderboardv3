@@ -258,7 +258,10 @@ class PlayerFormatter extends Formatter {
     }
 
     playerName() {
-        return this.div("player-name", this.player.metadata.personaname)
+        return this.openDiv("player-section")
+               .div("player-name", this.player.metadata.personaname)
+               .badges()
+               .closeDiv()
     }
 
     profilePicture() {
@@ -266,11 +269,28 @@ class PlayerFormatter extends Formatter {
     }
 
     mmr() {
-        return this.openDiv("player-section").div("player-mmr-header", "MMR").div("player-mmr-value", this.player.mmr.toFixed(0)).closeDiv()
+        return this.openDiv("player-section")
+               .div("player-mmr-header", "MMR")
+               .div("player-mmr-value", this.player.mmr.toFixed(0))
+               .closeDiv()
+    }
+
+    badges() {
+        if (!this.player.badges) {
+            return this
+        }
+
+        for (let badge of this.player.badges) {
+            this.div("player-badge", `<img src=badges/${badge.img} alt=${badge.alt_text}></img>`)
+        }
+        return this
     }
 
     winLoss() {
-        return this.openDiv("player-section").div("player-wl-header", "Wins/Losses").div("player-wl-value", `${this.player.winCount} - ${this.player.lossCount}`).closeDiv()
+        return this.openDiv("player-section")
+               .div("player-wl-header", "Wins/Losses")
+               .div("player-wl-value", `${this.player.winCount} - ${this.player.lossCount}`)
+               .closeDiv()
     }
 
     winPercentage() {

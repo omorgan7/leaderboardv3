@@ -1,0 +1,22 @@
+[
+    {
+        "name": "1st",
+        "img": "1st.png",
+        "alt_text": "This player achieved first place in Season 1 of the Inhouse."
+    },
+    {
+        "name": "2nd",
+        "img": "2nd.png",
+        "alt_text": "This player achieved second place in Season 1 of the Inhouse."
+    },
+    {
+        "name": "3rd",
+        "img": "3rd.png",
+        "alt_text": "This player achieved third place in Season 1 of the Inhouse."
+    },
+    {
+        "name": "top10",
+        "img": "10th.png",
+        "alt_text": "This player placed top 10 in Season 1 of the Inhouse."
+    }
+]

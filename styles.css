@@ -14,7 +14,6 @@ label, .player-name {
     font-size: 1.6em;
     text-align: left;
     margin-right: 5%;
-    float: left;
     min-width: 8em;
 }
 
@@ -338,8 +337,6 @@ img {
 }
 
 .player-section {
-    float: left;
-    clear: left;
     margin-right: 10%;
 }
 
@@ -361,6 +358,11 @@ img {
     margin: 20px;
     overflow: visible;
     height: 80px;
+}
+.player-badge {
+    float: left;
+    margin-right: 10px;
+    height: 35px;
 }
 
 .player-header {
