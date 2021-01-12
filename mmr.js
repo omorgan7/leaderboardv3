@@ -55,7 +55,7 @@ exports.updateMmrSystem = function(players, winner) {
         change = player.game_team == winner ? change : -change
 
         // move a _lot_ of mmr if you are calibrating
-        if (player.calibration_games > 1) {
+        if (player.calibration_games >= 1) {
             change *= calibrationFactors[player.calibration_games - 1]
             player.calibration_games -= 1
         }
