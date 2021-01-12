@@ -8,7 +8,7 @@ const baseMmr = 25
 const mmrCap = 20
 const thresholdFactor = 50
 
-const calibrationFactors = [1.6, 1.5, 1.4, 1.3, 1.2, 1.1]
+const calibrationFactors = [1.1, 1.2, 1.3, 1.4, 1.5, 1.6]
 const mmrChanges = {
     "0": 0,
     "1": 1,
