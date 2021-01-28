@@ -281,7 +281,7 @@ class PlayerFormatter extends Formatter {
         }
 
         for (let badge of this.player.badges) {
-            this.div("player-badge", `<img src=badges/${badge.img} alt=${badge.alt_text}></img>`)
+            this.div("player-badge", `<img src=/badges/${badge.img} alt="${badge.alt_text}"></img>`)
         }
         return this
     }
