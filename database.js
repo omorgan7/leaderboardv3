@@ -224,6 +224,12 @@ async function updatePlayersMmrAfterMatch(db, matchID, winner) {
 exports.addMatch = async function(db, matchData) {
 
     // first - reject the match if it's already in the DB.
+    if (matchData.match_id == 0) {
+        console.log("Error: match ID contains 0 - cannot upload.")
+        console.log("Logging remaining JSON file: ", matchData)
+        return
+    }
+
     if (await exports.isValidMatch(db, matchData.match_id)) {
         return
     }
