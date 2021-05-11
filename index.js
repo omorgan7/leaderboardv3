@@ -18,7 +18,8 @@ const app = express()
 const loginCookieOptions = {
     maxAge : 1000 * 60 * 10, // expires after 10 minutes
     httpOnly : true,
-    signed : true
+    signed : true,
+    sameSite : 'strict'
 }
 
 app.use(cookieParser(secrets.cookieSecret))
