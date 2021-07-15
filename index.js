@@ -184,6 +184,20 @@ app.get('/upload', (req, res, next) => {
     res.redirect("/")
 })
 
+app.get("/all_players.json", async (req, res, next) => {
+    try {
+        res.send(JSON.stringify(await database.fetchAllPlayers(db)))
+    }
+    catch(err) {
+        console.log(err)
+        res.send(404)
+    }
+})
+
+app.get("/matchmaking", async (req, res, next) => {
+    res.sendFile("matchmake.html", {root: './'})
+})
+
 app.post('/create', (req, res, next) => {
     const form = new formidable.IncomingForm()
     form.maxFileSize = 512 * 1024 * 1024

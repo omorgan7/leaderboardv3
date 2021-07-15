@@ -4,6 +4,7 @@ const promisify = require('util').promisify
 const sql = require("sqlite3")
 const utilities = require("./utilities")
 const mmr = require('./mmr')
+const steam = require('./steam_api')
 
 sql.createDatabaseAsync = promisify(sql.Database)
 
@@ -168,6 +169,21 @@ ORDER  BY match_id DESC`, player.id32)
     })
 
     return await Promise.all(queries);
+}
+
+exports.fetchAllPlayers = async function(db) {
+    const query = await db.allAsync("SELECT id, id32, mmr, name FROM player_table")
+
+    return await Promise.all(query.map(async (player) => {
+        let playerMetadata = {}
+        try {
+            playerMetadata = await steam.fetchLatestPlayerInformation(player.id)
+            player.name = playerMetadata.personaname
+        }
+        catch (_) {
+        }
+        return player
+    }))
 }
 
 exports.fetchPlayersByMmr = async function(db) {
