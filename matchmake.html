@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta name="Description" content="An interactive leaderboard documenting the DOTA 2 Inhouses of Bath Video Game Society (BVGS)">
+        <meta name="Keywords" content="BVGS, Dota 2">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>BVGS Dota 2</title>
+    </head>
+    <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css?family=Open+Sans">
+    <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css?family=Cinzel">
+    <link rel="stylesheet" type="text/css" href="/styles.css">
+    <body>
+        <div class="nav-bar">
+            <a class="nav-item" href="/">Leaderboard</a>
+            <a class="nav-item" href="/match">Matches</a>
+            <a class="nav-item" href="/matchmaking">Matchmaking</a>
+            <a class="nav-item" id="login" href=login>Login</a>
+        </div>
+        <h1>
+            BVGS INHOUSE
+        </h1>
+        <noscript>
+            Please enable Javascript to enable matchmaking.
+        </noscript>
+        <div class="mm-buttons">
+            <input type="text" id="player-search" onkeyup="filterPlayers()" placeholder="Search..">
+            <button onclick="clear2()">Clear</button>
+            <button onclick="swap()">Swap</button>
+            <button onclick="newPlayer()">Add new player</button>
+        </div>
+        <div class="matchmaking-bar">
+            <ul id="all-players"></ul>
+            <ul id="selected-players"></ul>
+            <ul id="radiant-players"></ul>
+            <ul id="dire-players"></ul>
+        </div>
+        
+        <script>
+            const searchBar = document.getElementById("player-search")
+            const allPlayersLi = document.getElementById("all-players")
+            const selectedPlayers = document.getElementById("selected-players")
+            const direPlayers = document.getElementById("dire-players")
+            const radiantPlayers = document.getElementById("radiant-players")
+            const bonusPlayers = []
+            var allPlayers
+
+            function swap() {
+                const rad = radiantPlayers.innerHTML
+                const dire = direPlayers.innerHTML
+                radiantPlayers.innerHTML = new String(dire)
+                direPlayers.innerHTML = new String(rad)
+            }
+
+            function clear2() {
+                rerender(allPlayers)
+                radiantPlayers.innerHTML = direPlayers.innerHTML = selectedPlayers.innerHTML = ""
+            }
+            function newPlayer() {
+                bonusPlayers.push({name: `(${bonusPlayers.length + 1}) New Player`, mmr: 2000})
+                allPlayers.push(bonusPlayers[bonusPlayers.length - 1])
+                rerender(allPlayers)
+            }
+            function filterPlayers() {
+                const players = [...allPlayersLi.children]
+                const filter = searchBar.value.toLowerCase()
+                players.forEach((player) => {
+                    if (!player.innerText.toLowerCase().includes(filter)) {
+                        player.style.display = "none"
+                    }
+                    else {
+                        player.style.display = ""
+                    }
+                })
+            }
+            function getRndInteger(min, max) {
+                return Math.floor(Math.random() * (max - min) ) + min;
+            }
+
+            function avgMmr(players) {
+                return players.reduce((prev, next) => {
+                    return prev + next.mmr / players.length
+                }, 0)
+            }
+
+            function balance(players) {
+                const possibleCombinations = combinations(players)
+                const best = possibleCombinations.reduce((prev, current) => {
+                    const [prevDireAvg, prevRadAvg, dire, rad] = prev
+                    const direAvg = avgMmr(current[0])
+                    const radAvg = avgMmr(current[1])
+
+                    if (Math.abs(prevDireAvg - prevRadAvg) < Math.abs(direAvg - radAvg)) {
+                        return prev
+                    }
+                    return [direAvg, radAvg, current[0], current[1]]
+                }, [avgMmr(possibleCombinations[0][0]), avgMmr(possibleCombinations[0][1]), possibleCombinations[0], possibleCombinations[1]])
+
+                return best
+            }
+
+            function combinations(input) {
+                const result = []
+                result.length = 5
+                const results = []
+                function combine(input, len, start) {
+                    if (len === 0) {
+                        const antiResult = []
+                        for (let i = 0; i < input.length; ++i) {
+                            if (result.some((index) => index == i)) {
+                                continue
+                            }
+                            antiResult.push(i)
+                        }
+                        results.push([result.map((index) => input[index]), antiResult.map((index) => input[index])])
+                        return
+                    }
+                    for (let i = start; i <= input.length - len; ++i) {
+                        result[result.length - len] = i
+                        combine(input, len-1, i+1 )
+                    }
+                }
+                combine(input, result.length, 0)
+                return results
+            }
+
+            function rerender(players) {
+                players.sort((a, b) => a.name.localeCompare(b.name))
+                allPlayersLi.innerHTML = ""
+                players.forEach((player) => {
+                    let box = document.createElement("li")
+                    let node = document.createElement("div")
+                    let mmrNode = document.createElement("div")
+
+                    node.className = "mm-cell"
+                    mmrNode.className = node.className
+
+                    mmrNode.innerHTML = Math.round(player.mmr)
+
+                    box.appendChild(node)
+                    box.appendChild(mmrNode)
+
+                    node.innerText = player.name
+                    box.addEventListener("click", () => {
+                        direPlayers.innerHTML = ""
+                        radiantPlayers.innerHTML = ""
+                        if ([...selectedPlayers.children].some((child) => child == box)) {
+                            allPlayersLi.appendChild(box)
+                            const remaining = [...allPlayersLi.children].map((node) => { return {name: node.children[0].innerText, mmr: node.children[1].innerText} } )
+                            rerender(remaining)
+                        }
+                        else {
+                            if (selectedPlayers.children.length < 10) {
+                                selectedPlayers.appendChild(box)
+                                
+                            }
+                            if (selectedPlayers.children.length == 10) {
+                                const [direAvg, radAvg, dire, radiant] = 
+                                    balance([...selectedPlayers.children]
+                                        .map((child) => {
+                                            return allPlayers.find((player) =>  player.name == child.children[0].innerText)
+                                        }
+                                    )
+                                )
+                                dire.forEach((player) => {
+                                    let node = document.createElement("li")
+                                    node.innerText = player.name
+                                    direPlayers.appendChild(node)
+                                })
+                                let direAvgNode = document.createElement("li")
+                                direAvgNode.innerText = `Dire Average: ${Math.round(direAvg)}`
+                                direPlayers.appendChild(direAvgNode)
+                                    
+                                radiant.forEach((player) => {
+                                    let node = document.createElement("li")
+                                    node.innerText = player.name
+                                    radiantPlayers.appendChild(node)
+                                })
+                                let radiantAvgNode = document.createElement("li")
+                                radiantAvgNode.innerText = `Radiant Average: ${Math.round(radAvg)}`
+                                radiantPlayers.appendChild(radiantAvgNode)
+                            }
+                        }
+                    })
+                    allPlayersLi.appendChild(box)
+                })
+            }
+
+            function main() {
+                allPlayers = JSON.parse(this.responseText)
+                rerender(allPlayers)
+            }
+            
+            const req = new XMLHttpRequest()
+            req.open("GET", "all_players.json")
+            req.addEventListener("load", main);
+            req.send()
+        
+        </script>
+    </body>
+</html>
