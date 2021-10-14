@@ -45,9 +45,7 @@ exports.updateMmrSystem = function(players, winner) {
     const difference = Math.round(radiantAvg - direAvg)
 
     // clamp to a maximum of mmrCap - so that the most mmr you can win is 45 and the the least is 5.
-
-    //
-    const mmrIncrements = Math.floor(Math.abs(difference) / thresholdFactor)
+    const mmrIncrements = Math.min(6, Math.floor(Math.abs(difference) / thresholdFactor))
 
     const baseChange = Math.min(mmrCap, mmrChanges[mmrIncrements])
 
