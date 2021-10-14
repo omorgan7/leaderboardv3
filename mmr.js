@@ -34,6 +34,10 @@ exports.updateMmrSystem = function(players, winner) {
     const radiant = players.filter(player => player.game_team == utilities.RADIANT)
     const dire = players.filter(player => player.game_team == utilities.DIRE)
 
+    console.log("Calculating MMR for following teams:")
+    console.log(`Radiant: ${radiant}`)
+    console.log(`Dire: ${radiant}`)
+
     const radiantAvg = averageMmr(radiant)
     const direAvg = averageMmr(dire)
 
@@ -66,9 +70,12 @@ exports.updateMmrSystem = function(players, winner) {
         // don't accumulate mmr if the player would go negative.
         if (change < 0 && (player.mmr + change) < 1) {
         }
+        else if (Number.isNaN(change)) {
+            console.log(`WARNING: ${player.id32} would have a NaN MMR`)
+        }
         else {
             player.mmr += change
+            console.log(`Updating ${player.id32} with MMR: ${change}`)
         }
-        console.log(`Updating ${player.id32} with MMR: ${change}`)
     })
 }

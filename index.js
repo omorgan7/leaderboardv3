@@ -1,5 +1,7 @@
 'use strict'
 
+require('log-timestamp')
+
 const database = require('./database')
 const parser = require('./parser')
 const render = require('./render')
