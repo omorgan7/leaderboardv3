@@ -30,11 +30,16 @@ app.use(express.json())
 const db = database.startDatabase()
 const renderer = new render(db)
 
+function logEndpoint(req) {
+    console.log(`Requested: ${req.originalUrl}, headers: 'host: ${req.headers['host']}, user-agent: ${req.headers['user-agent']}, referer: ${req.headers['referer']},`)
+}
+
 app.get('/styles.css', (req, res, next) => {
     res.sendFile('styles.css', {root: './'})
 })
 
 app.get('/', async (req, res, next) => { 
+    logEndpoint(req)
     if (req.signedCookies['logged-in'] == null) {
         res.cookie('logged-in', 'false', loginCookieOptions);
     }
@@ -44,7 +49,7 @@ app.get('/', async (req, res, next) => {
 })
 
 app.get('/matches', async (req, res, next) => {
-
+    logEndpoint(req)
     // permanent redirect.
     res.set('location', '/match+page=1')
     res.status(301).send()
@@ -52,12 +57,14 @@ app.get('/matches', async (req, res, next) => {
 
 app.get('/match', async (req, res, next) => {
 
+    logEndpoint(req)
     // permanent redirect.
     res.set('location', '/match+page=1')
     res.status(301).send()
 })
 
 app.get(/match\+page=(\d+)/, async (req, res, next) => {
+    logEndpoint(req)
     const paginate = Number.parseInt(req.params[0])
     if (paginate == NaN)
     {
@@ -69,6 +76,7 @@ app.get(/match\+page=(\d+)/, async (req, res, next) => {
 })
 
 app.post('/login', async (req, res, next) => {
+    logEndpoint(req)
     const numAttemptsOptions = {
         maxAge : 1000 * 60 * 60 * 24  
     }
@@ -109,6 +117,7 @@ app.post('/login', async (req, res, next) => {
 })
 
 app.get('/login', (req, res, next) => {
+    logEndpoint(req)
     if (req.signedCookies['logged-in'] == "true") {
         res.redirect("/upload")
         return
@@ -117,6 +126,7 @@ app.get('/login', (req, res, next) => {
 })
 
 app.get(/\/matches\/(\d+)/, async (req, res, next) => {
+    logEndpoint(req)
     const matchID = parseInt(req.params[0])
     if (matchID == NaN) {
         res.sendStatus(404)
@@ -178,6 +188,7 @@ app.get('/index.html', (req, res, next) => {
 })
 
 app.get('/upload', (req, res, next) => {
+    logEndpoint(req)
     if (req.signedCookies['logged-in'] == "true") {
         res.sendFile('upload.html', {root: './'});
         return
@@ -187,6 +198,7 @@ app.get('/upload', (req, res, next) => {
 })
 
 app.get("/all_players.json", async (req, res, next) => {
+    logEndpoint(req)
     try {
         res.send(JSON.stringify(await database.fetchAllPlayers(db)))
     }
@@ -201,6 +213,7 @@ app.get("/matchmaking", async (req, res, next) => {
 })
 
 app.post('/create', (req, res, next) => {
+    logEndpoint(req)
     const form = new formidable.IncomingForm()
     form.maxFileSize = 512 * 1024 * 1024
     form.parse(req, (err, fields, files) => {
@@ -222,6 +235,7 @@ app.post('/create', (req, res, next) => {
 })
 
 app.get('(*)', (req, res, next) => {
+    logEndpoint(req)
     res.sendStatus(404)
 })
 
