@@ -1,21 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <meta name="Description" content="An interactive leaderboard documenting the DOTA 2 Inhouses of Bath Video Game Society (BVGS)">
-        <meta name="Keywords" content="BVGS, Dota 2">
+        <meta name="Description" content="An interactive leaderboard documenting the DOTA 2 Inhouses of Rallying Cry Dota Community (RCDC)">
+        <meta name="Keywords" content="RCDC, Dota 2">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>BVGS Dota 2</title>
+        <title>RCDC Dota 2</title>
+        <link rel="icon" type="image/png" href="/favicon.png">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Cinzel">
+        <link rel="stylesheet" type="text/css" href="/styles.css">
     </head>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Cinzel">
-    <link rel="stylesheet" type="text/css" href="/styles.css">
     <body>
         <div class="nav-bar">
           <a class="nav-item" href="/">Leaderboard</a>
           <a class="nav-item" href="/match">Matches</a>
           <a class="nav-item" href="/matchmaking">Matchmaking</a>
         </div>
-        <h3><a href="/" class="subtitle-header">BVGS INHOUSE</a></h3>
+        <h3><a href="/" class="subtitle-header">RCDC INHOUSE</a></h3>
         <h1>ADD REPLAY</h1>
         <noscript>
           <div>Please enable Javascript for file uploads.</div>
@@ -23,12 +24,12 @@
         </noscript>
         <div class="create">
             <form id="create_form" enctype="multipart/form-data">
-                <label for="profilePic">Replay File</label>
+                <label>Replay File</label>
                 <input type="file" name="replay" id="replay" class="input-type-file">
                 <progress id="progress-bar" value="0" max="100" style="width:20%"></progress>
                 <input type="button" id="submit-score" value="Submit">
-                <h2 id="status"></h3>
-                <h2 id="loaded-total"></p>
+                <h2 id="status"></h2>
+                <h2 id="loaded-total"></h2>
             </form>
         </div>
         <script>

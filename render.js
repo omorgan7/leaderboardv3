@@ -25,7 +25,7 @@ class Formatter {
     }
 
     title(description) {
-        this.page = this.page + `<title>${description}</title>`
+        this.page = this.page.replace(`###PLACEHOLDER-TITLE-REPLACE###`, description)
         return this
     }
     div(className, str) {
@@ -57,7 +57,7 @@ class Formatter {
     }
 
     hero(hero) {
-        const heroStr = hero.replace("npc_dota_hero_", "<img src='/dota_assets/") + "_vert.jpg'></img>"
+        const heroStr = hero.replace("npc_dota_hero_", "<img src='/dota_assets/") + "_vert.jpg'>"
 
         return this.tableCell(heroStr, "cell match-hero-img")
     }
@@ -67,9 +67,9 @@ class Formatter {
 
         return this.tableCell(
             items.slice(0, 6)
-            .reduce((prev, next) => prev + `<img src='${next}'></img>`, ""), "cell cell-item-img")
+            .reduce((prev, next) => prev + `<img src='${next}'>`, ""), "cell cell-item-img")
             + this.tableCell(items.slice(6)
-            .reduce((prev, next) => prev + `<img src='${next}'></img>`, ""), "cell cell-item-img")
+            .reduce((prev, next) => prev + `<img src='${next}'>`, ""), "cell cell-item-img")
     }
 
     buffs(buffsStr) {
@@ -117,6 +117,11 @@ class FrontPageFormatter extends Formatter {
         super(page)
     }
 
+    stripBodyTag() {
+        this.page = this.page.replace('</body>', "")
+        return this
+    }
+
     playerTable(players) {
         this.openTableRow("table-row-big-header")
         this.tableCell("Rank", "cell cell-big")
@@ -131,7 +136,7 @@ class FrontPageFormatter extends Formatter {
             let name = player.metadata.personaname
 
             this.tableCell(`#${i + 1}`, "cell cell-big cell-player-rank")
-            this.tableCell(`<img src=${player.metadata.avatarfull}</img>`, "cell  cell-big cell-player-profile-pic")
+            this.tableCell(`<img src=${player.metadata.avatarfull}>`, "cell  cell-big cell-player-profile-pic")
             
             this.tableCell(`<a href=/player/${player.id32}> ${name}</a>`, "cell cell-big cell-big-player-name")
             this.tableCell(`${player.winCount}-${player.lossCount}`, "cell cell-big cell-win-loss")
@@ -265,7 +270,7 @@ class PlayerFormatter extends Formatter {
     }
 
     profilePicture() {
-        return this.div("player-pic", `<img src='${this.player.metadata.avatarfull}'></img>`)
+        return this.div("player-pic", `<img src='${this.player.metadata.avatarfull}'>`)
     }
 
     mmr() {
@@ -281,7 +286,7 @@ class PlayerFormatter extends Formatter {
         }
 
         for (let badge of this.player.badges) {
-            this.div("player-badge", `<img src=/badges/${badge.img} alt="${badge.alt_text}"></img>`)
+            this.div("player-badge", `<img src=/badges/${badge.img} title="${badge.alt_text}" alt="${badge.alt_text}">`)
         }
         return this
     }
@@ -358,6 +363,7 @@ class Render {
 
     async buildFrontpage() {
         const formatter = new FrontPageFormatter(String(this.homePage))
+        formatter.stripBodyTag()
 
         const players = await Promise.all((await database.fetchPlayersByMmr(this.db)).map(async (player) => {
             let playerMetadata = {}

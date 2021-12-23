@@ -175,6 +175,10 @@ app.get(/\/badges\/(.+png)/, (req, res, next) => {
     res.sendFile(req.params[0], {root: "./badges/"})
 })
 
+app.get('/favicon.png', (req, res, next) => {
+    res.sendFile('favicon.png', {root: './'} )
+})
+
 app.get("/unknown_profile.jpg", (req, res, next) => {
     res.sendFile("/unknown_profile.jpg", {root: "./steam_assets/"})
 })
