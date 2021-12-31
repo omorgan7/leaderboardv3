@@ -10,3 +10,4 @@ exports.cookieSecret = secret.cookie_secret
 
 exports.loginHash = secret.login_hash
 
+exports.apiKey = secret.api_key

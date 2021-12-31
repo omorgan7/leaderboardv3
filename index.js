@@ -201,14 +201,63 @@ app.get('/upload', (req, res, next) => {
     res.redirect("/")
 })
 
-app.get("/all_players.json", async (req, res, next) => {
-    logEndpoint(req)
+app.get('/api', async (req, res, next) => {
     try {
-        res.send(JSON.stringify(await database.fetchAllPlayers(db)))
+        const url = new URLSearchParams(req.query)
+        const v = url.get('v')
+        if (v == undefined || v < 1) {
+            res.sendStatus(403)
+            return
+        }
+
+        const key = url.get('key')
+        if (key != secrets.apiKey) {
+            res.sendStatus(403)
+            return;
+        }
+
+        const match = url.get('match')
+        if (match != undefined) {
+            if (match === "recent") {
+                res.send(JSON.stringify(await database.recentMatch(db)))
+                return
+            }
+            else {
+                const matchID = Number.parseInt(match)
+                if (matchID == NaN) {
+                    res.sendStatus(404)
+                    return;
+                }
+
+                res.send(JSON.stringify(await database.fetchMatch(db, matchID)))
+                return
+            }
+        }
+        const p = url.get('player')
+
+        if (p != undefined) {
+            const playerID = Number.parseInt(p)
+            if (playerID == NaN) {
+                res.sendStatus(404)
+                return;
+            }
+
+            const player = await database.fetchPlayer(db, playerID)
+            player.matches = await database.fetchAllMatchesForPlayer(db, playerID);
+
+            res.send(JSON.stringify(player))
+            return
+        }
+
+        const all = url.get('all')
+        if (all != undefined) {
+            res.send(JSON.stringify(await database.fetchAllPlayers(db)))
+            return
+        }
     }
     catch(err) {
         console.log(err)
-        res.send(404)
+        res.send(500)
     }
 })
 

@@ -69,6 +69,13 @@ exports.fetchMatches = async function(db, start, end) {
     return matches
 }
 
+exports.recentMatch = async function(db) {
+    const match = await db.getAsync("SELECT * FROM match_table ORDER BY id DESC LIMIT 1")
+    match.player = await db.allAsync("SELECT * FROM match_player_table ORDER BY match_id DESC LIMIT 10")
+
+    return match
+}
+
 exports.fetchMatch = async function(db, matchID) {
     const match = await db.getAsync("SELECT * FROM match_table WHERE id = ?", matchID)
     match.player = await db.allAsync("SELECT * FROM match_player_table WHERE match_id = ?", matchID)
@@ -102,6 +109,17 @@ exports.fetchMatchesForPlayer = async function(db, id32, matchBegin, matchEnd) {
             WHERE RowNum > ? AND RowNum <= ?
             ORDER BY t.id DESC
         `, id32, matchBegin, matchEnd)
+}
+
+exports.fetchAllMatchesForPlayer = async function(db, id32) {
+    return await db.allAsync(`SELECT * FROM (
+            SELECT
+                *
+            FROM
+                match_player_table INNER JOIN match_table on match_table.id = match_player_table.match_id WHERE id32 = ?
+        ) t
+            ORDER BY t.id DESC
+        `, id32)
 }
 
 exports.updatePlayersMmr = async function(db, players) {
@@ -187,7 +205,21 @@ exports.fetchAllPlayers = async function(db) {
 }
 
 exports.fetchPlayersByMmr = async function(db) {
-    const query = await Promise.all((await db.allAsync("SELECT * FROM (SELECT player_table.id32, player_table.id, player_table.calibration_games, name, mmr, count(match_id) AS match_count FROM match_player_table INNER JOIN player_table ON match_player_table.id32 = player_table.id32 GROUP BY player_table.id32 ORDER BY mmr DESC) WHERE calibration_games == 0 LIMIT 50")).map(async player => ({
+    const query = await Promise.all((await db.allAsync(`
+    SELECT *
+    FROM
+      (SELECT player_table.id32,
+              player_table.id,
+              player_table.calibration_games,
+              name,
+              mmr,
+              count(match_id) AS match_count
+       FROM match_player_table
+       INNER JOIN player_table ON match_player_table.id32 = player_table.id32
+       GROUP BY player_table.id32
+       ORDER BY mmr DESC)
+    WHERE calibration_games == 0
+    LIMIT 50`)).map(async player => ({
         ...player,
         ...await exports.fetchPlayer(db, player.id32)
 
@@ -201,7 +233,11 @@ exports.fetchPlayer = async function(db, id32) {
     
     player.matchCount = (await db.getAsync("SELECT COUNT(*) FROM match_player_table where id32 = ?", id32))["COUNT(*)"]
     player.winCount = (await db.getAsync(
-        "SELECT COUNT(*) FROM match_player_table INNER JOIN match_table ON match_table.id = match_player_table.match_id AND match_player_table.game_team = match_table.winner WHERE match_player_table.id32 = ?", id32))["COUNT(*)"]
+        `SELECT COUNT(*)
+        FROM match_player_table
+        INNER JOIN match_table ON match_table.id = match_player_table.match_id
+        AND match_player_table.game_team = match_table.winner
+        WHERE match_player_table.id32 = ?`, id32))["COUNT(*)"]
     player.lossCount = player.matchCount - player.winCount
 
     if (player.badges) {
