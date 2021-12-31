@@ -12,6 +12,8 @@ sql.createDatabaseAsync = promisify(sql.Database)
 // use placeholder name for now.
 const dbName = "match_database.sqllite3"
 
+const seasonTime = 1640995200; // new year 2022.
+
 exports.createDatabase = async function() {
     const db = exports.startDatabase()
 
@@ -221,11 +223,30 @@ exports.fetchPlayersByMmr = async function(db) {
     WHERE calibration_games == 0
     LIMIT 50`)).map(async player => ({
         ...player,
-        ...await exports.fetchPlayer(db, player.id32)
+        ...await exports.fetchPlayerRecent(db, player.id32, seasonTime)
 
     })))
     
     return query
+}
+
+exports.fetchPlayerRecent = async function(db, id32, timestamp) {
+    const player = await db.getAsync("SELECT * from player_table WHERE id32 = ?", id32)
+    
+    player.matchCount = (await db.getAsync(`
+    SELECT COUNT(*)
+    FROM match_player_table
+    INNER JOIN match_table ON match_table.id = match_player_table.match_id
+    WHERE id32 = ? AND match_table.timestamp > ?`, id32, timestamp))["COUNT(*)"]
+    player.winCount = (await db.getAsync(
+        `SELECT COUNT(*)
+        FROM match_player_table
+        INNER JOIN match_table ON match_table.id = match_player_table.match_id
+        AND match_player_table.game_team = match_table.winner
+        WHERE match_player_table.id32 = ? AND match_table.timestamp > ?`, id32, timestamp))["COUNT(*)"]
+    player.lossCount = player.matchCount - player.winCount
+
+    return player
 }
 
 exports.fetchPlayer = async function(db, id32) {
@@ -244,7 +265,6 @@ exports.fetchPlayer = async function(db, id32) {
         player.badges = JSON.parse(player.badges)
     }
     
-
     return player
 }
 

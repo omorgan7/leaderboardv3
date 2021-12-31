@@ -1,7 +1,7 @@
 {
   "name": "leaderboardv3",
   "version": "1.0.0",
-  "description": "\"The leaderboard system for BVGS Dota 2\"",
+  "description": "\"The leaderboard system for RCDC Dota 2\"",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
