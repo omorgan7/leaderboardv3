@@ -125,7 +125,6 @@ exports.fetchAllMatchesForPlayer = async function(db, id32) {
 }
 
 exports.updatePlayersMmr = async function(db, players) {
-    console.log
     await Promise.all(players.map(async (player) => {
         console.log(`Updating mmr of player: ${player.id32} to ${player.mmr}`)
         await db.runAsync(`UPDATE player_table SET mmr = ? WHERE id32 = ?`, player.mmr, player.id32)
