@@ -275,7 +275,13 @@ app.post('/create', (req, res, next) => {
             res.end()
             return
         }
-        parser.parseReplay(files.replay.path, async (err, matchData) => {
+        let fileName = null
+        const idMatch = /^(\d+)\.dem$/.exec(fields.file_name)
+        if (idMatch != null) {
+            fileName = Number.parseInt(idMatch[1])
+        }
+
+        parser.parseReplay(files.replay.path, fileName, async (err, matchData) => {
             if (err) {
                 console.log("Error: Replay parse error:", err)
                 res.end()

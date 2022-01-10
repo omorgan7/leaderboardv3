@@ -16,7 +16,7 @@ var i = 0
 
 const parse = async function() {
     let file = files[i]
-    parser.parseReplay(path + file, async (err, matchData) => {
+    parser.parseReplay(path + file, /^(\d+)\.dem$/.exec(file), async (err, matchData) => {
         if (err) {
             console.log("Error: Replay parse error:", err)
             return

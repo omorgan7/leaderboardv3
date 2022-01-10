@@ -1,5 +1,6 @@
 'use strict'
 
+const { match } = require("assert")
 const spawn = require("child_process")
 const fs = require("fs")
 const path = require("path")
@@ -20,7 +21,7 @@ function fileFromStdOut(stdout) {
     return matched
 }
 
-exports.parseReplay = function(fileName, callback) {
+exports.parseReplay = function(fileName, backupID, callback) {
     var file = fileName
     const javaParser = spawn.exec("java -jar mjollnir/target/mjollnir.one-jar.jar " + fileName, (err, stdout, stderr) => {
         
@@ -35,7 +36,7 @@ exports.parseReplay = function(fileName, callback) {
             callback("Replay parse failed.", null)
             return
         }
-        
+
         const fileName = "replays/" + tempName
 
         fs.rename(tempName, fileName, (err) => {
@@ -45,6 +46,10 @@ exports.parseReplay = function(fileName, callback) {
                 if (err) return callback(err)
         
                 const matchData = JSON.parse(data)
+                if (matchData.match_id === 0 && backupID != null) {
+                    console.log(`Warning - replay ID contains 0, updating to ${backupID}`)
+                    matchData.match_id = backupID
+                }
                 callback(null, matchData)
             })
         })    

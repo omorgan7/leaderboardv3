@@ -44,6 +44,7 @@ function uploadFile() {
   const file = element("replay").files[0]
   const formdata = new FormData()
   formdata.append("replay", file)
+  formdata.append("file_name", file.name)
   const ajax = new XMLHttpRequest()
   ajax.upload.addEventListener("progress", progressHandler, false)
   ajax.addEventListener("load", completeHandler, false)
