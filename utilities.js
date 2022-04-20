@@ -1,8 +1,53 @@
 const RADIANT = 2
 const DIRE = 3
 
+const fs = require('fs')
+
 exports.RADIANT = RADIANT
 exports.DIRE = DIRE
+
+const heroes = JSON.parse(fs.readFileSync("dota_assets/heroes.json"))
+const items = JSON.parse(fs.readFileSync("dota_assets/items.json"))
+
+const keysByName = (dict) => {
+    let out = {}
+    for (const item of dict) {
+        out[item.name] = item
+    }
+
+    return out
+}
+
+const keysById = (dict) => {
+    let out = {}
+    for (const item of dict) {
+        out[item.id] = item
+    }
+
+    return out
+}
+
+const heroesIds = keysById(heroes)
+const itemIds = keysById(items)
+const heroesNames = keysByName(heroes)
+const itemNames = keysByName(items)
+
+exports.heroIdToName = (id) => {
+    const hero = heroesIds[id]
+    return hero == undefined ? null : hero.name
+}
+exports.heroIdToLocalisedName = (id) => {
+    const hero = heroesIds[id]
+    return hero == undefined ? null : hero.localized_name
+}
+exports.heroNameToLocalisedName = (name) => {
+    const hero = heroesIds[name]
+    return hero == undefined ? null : hero.localized_name
+}
+
+exports.itemIdToName = (id) => itemIds[id].name
+exports.itemIdToLocalisedName = (id) => itemIds[id].localized_name
+exports.itemNameToLocalisedName = (name) => itemNames[name].localized_name
 
 exports.teamStringToInt = function(team) {
     const lower = team.toLowerCase()
