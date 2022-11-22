@@ -17,7 +17,7 @@ http.getAsync = function(url) {
     })
 }
 
-const maxTries = 5
+const maxTries = 4
 
 async function fetchLatestPlayerInformation(steam_id, tryCount = 0) {
     const apiCall = `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v1/?key=${secrets.steamKey}&steamids=${steam_id}`
@@ -41,7 +41,7 @@ async function fetchLatestPlayerInformation(steam_id, tryCount = 0) {
         }
 
         // retry recursively, with exponential backoff.
-        await new Promise(resolve => setTimeout(resolve, 10 + Math.pow(5, tryCount)))
+        await new Promise(resolve => setTimeout(resolve, 5 + Math.pow(2, tryCount)))
         await fetchLatestPlayerInformation(steam_id, tryCount + 1)
     }
 }
