@@ -137,6 +137,11 @@ exports.updatePlayersCalibration = async function(db, players) {
         await db.runAsync(`UPDATE player_table SET calibration_games = ? WHERE id32 = ?`, player.calibration_games, player.id32)
     }))
 }
+exports.updatePlayersBadges = async function(db, players) {
+    await Promise.all(players.map(async (player) => {
+        await db.runAsync(`UPDATE player_table SET badges = ? WHERE id32 = ?`, player.badges, player.id32)
+    }))
+}
 
 exports.playerOnStreak = async function(db, players, streakCount) {
     const queries = players.map(async (player) => {
