@@ -115,6 +115,7 @@ class Formatter {
 class FrontPageFormatter extends Formatter {
     constructor(page, match) {
         super(page)
+        this.skipMmr = false
     }
 
     stripBodyTag() {
@@ -128,7 +129,10 @@ class FrontPageFormatter extends Formatter {
         this.tableCell("", "cell  cell-big cell-player-profile-pic")
         this.tableCell("Name",  "cell cell-big cell-big-player-name")
         this.tableCell("Win/Loss",  "cell cell-big cell-win-loss")
-        this.tableCell("MMR", "cell cell-big")
+        if (!this.skipMmr) {
+            this.tableCell("MMR", "cell cell-big")
+        }
+        
         this.closeTableRow()
         for (let i = 0; i < players.length; i++) {
             let player = players[i]
@@ -140,7 +144,10 @@ class FrontPageFormatter extends Formatter {
             
             this.tableCell(`<a href=/player/${player.id32}> ${name}</a>`, "cell cell-big cell-big-player-name")
             this.tableCell(`${player.winCount}-${player.lossCount}`, "cell cell-big cell-win-loss")
-            this.tableCell(player.mmr.toFixed(0), "cell cell-big")
+            if (!this.skipMmr) {
+                this.tableCell(player.mmr.toFixed(0), "cell cell-big")
+            }
+            
             this.closeTableRow()
         }
         
@@ -361,6 +368,42 @@ class Render {
         this.matchesPage = fs.readFileSync("matches.html", "utf8")
     }
 
+    buildPlayers(formatter, players) {
+        formatter.openDiv("table-big")
+
+        formatter.playerTable(players)
+
+        formatter.closeDiv()
+        return this.closeTemplate(formatter.page)
+    }
+
+    async buildAlltimePlayers() {
+        const formatter = new FrontPageFormatter(String(this.homePage))
+        formatter.stripBodyTag()
+        formatter.skipMmr = true
+
+        const players = await Promise.all((await database.fetchPlayersByWinrate(this.db)).map(async (player) => {
+            let playerMetadata = {}
+            try {
+                playerMetadata = await steam.fetchLatestPlayerInformation(player.id)
+            }
+            catch (_) {
+                playerMetadata.avatarfull = "/unknown_profile.jpg"
+                playerMetadata.personaname = player.name
+                playerMetadata.profileurl = `https://steamcommunity.com/id/${player.steam_id}`
+            }
+            player.metadata = playerMetadata
+
+            return player
+        }))
+
+        players.sort((a, b) => {
+            return -(a.winCount - b.winCount)
+        })
+
+        return this.buildPlayers(formatter, players)
+    }
+
     async buildFrontpage() {
         const formatter = new FrontPageFormatter(String(this.homePage))
         formatter.stripBodyTag()
@@ -380,12 +423,7 @@ class Render {
             return player
         }))
 
-        formatter.openDiv("table-big")
-
-        formatter.playerTable(players)
-
-        formatter.closeDiv()
-        return this.closeTemplate(formatter.page)
+        return this.buildPlayers(formatter, players)
     }
 
     async buildMatchesPage(page) {

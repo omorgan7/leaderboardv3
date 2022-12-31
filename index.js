@@ -48,6 +48,16 @@ app.get('/', async (req, res, next) => {
     res.send(page)
 })
 
+app.get('/all-time', async (req, res, next) => {
+    logEndpoint(req)
+    if (req.signedCookies['logged-in'] == null) {
+        res.cookie('logged-in', 'false', loginCookieOptions);
+    }
+
+    const page = await renderer.buildAlltimePlayers()
+    res.send(page)
+})
+
 app.get('/matches', async (req, res, next) => {
     logEndpoint(req)
     // permanent redirect.

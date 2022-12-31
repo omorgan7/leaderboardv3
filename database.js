@@ -234,6 +234,28 @@ exports.fetchPlayersByMmr = async function(db) {
     return query
 }
 
+exports.fetchPlayersByWinrate = async function(db) {
+    const query = await Promise.all((await db.allAsync(`
+    SELECT *
+    FROM
+      (SELECT player_table.id32,
+              player_table.id,
+              player_table.calibration_games,
+              name,
+              mmr,
+              count(match_id) AS match_count
+       FROM match_player_table
+       INNER JOIN player_table ON match_player_table.id32 = player_table.id32
+       GROUP BY player_table.id32
+       ORDER BY match_count DESC)
+    LIMIT 50`)).map(async player => ({
+        ...player,
+        ...await exports.fetchPlayerRecent(db, player.id32, 0)
+    })))
+    
+    return query
+}
+
 exports.fetchPlayerRecent = async function(db, id32, timestamp) {
     const player = await db.getAsync("SELECT * from player_table WHERE id32 = ?", id32)
     
