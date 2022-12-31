@@ -12,7 +12,7 @@ sql.createDatabaseAsync = promisify(sql.Database)
 // use placeholder name for now.
 const dbName = "match_database.sqllite3"
 
-const seasonTime = 1640995200; // new year 2022.
+const seasonTime = 1672531200; // new year 2023.
 
 exports.createDatabase = async function() {
     const db = exports.startDatabase()
